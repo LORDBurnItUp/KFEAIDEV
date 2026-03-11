@@ -27,6 +27,8 @@ const dashboard       = require('./dashboard');
 
 // Serve static assets
 app.use('/styles', express.static(path.join(__dirname, 'styles')));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use('/pages', express.static(path.join(__dirname, 'pages')));
 
 // Kings Dripping Swag Agency Hub (Main Landing)
 app.get('/', (req, res) => {

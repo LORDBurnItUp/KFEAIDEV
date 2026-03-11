@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mission Control | Kings Dripping Swag</title>
-    <link rel="stylesheet" href="/styles/intro.css">
+    <title>KINGS DRIPPING SWAG | AI DEVELOPMENT HUB</title>
+    <!-- Import Three.js Map -->
     <script type="importmap">
       {
         "imports": {
@@ -13,754 +13,852 @@
         }
       }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.4/build/spline-viewer.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #030305;
-            --panel-bg: rgba(10, 10, 20, 0.8);
-            --border: rgba(0, 242, 255, 0.3);
-            --accent: #00f2ff;
-            --secondary: #ff00ff;
+            --bg: #03040c;
+            --panel-bg: rgba(7, 12, 30, 0.65);
+            --panel-border: rgba(0, 255, 255, 0.4);
+            --panel-glow: rgba(0, 255, 255, 0.15);
+            --cyan: #00f2ff;
+            --purple: #d000ff;
             --gold: #ffcc00;
-            --text: #e0e0e0;
-            --muted: #666;
-        }
-        
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            overflow: hidden;
-            height: 100vh;
+            --text-main: #e2f1f8;
+            --text-muted: #5b7a8a;
+            --danger: #ff0055;
+            --success: #00ff88;
         }
 
-        #agency-hub {
-            display: none;
-            opacity: 0;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
             width: 100vw;
             height: 100vh;
-            display: grid;
-            grid-template-columns: 300px 1fr 300px;
-            grid-template-rows: 80px 1fr 200px;
-            gap: 15px;
-            padding: 15px;
-            box-sizing: border-box;
-            background: radial-gradient(circle at center, #0a0a1f 0%, #030305 100%);
-            transition: opacity 2s ease-in;
         }
 
+        /* Initial Boot Sequence */
+        #boot-sequence {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyan);
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            transition: opacity 1.5s ease-out;
+        }
+
+        #boot-log { width: 60%; height: 300px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+        .boot-line { margin: 2px 0; text-shadow: 0 0 5px var(--cyan); }
+        .boot-glitch { animation: glitch 0.2s linear infinite reverse; }
+
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 1px) }
+            40% { transform: translate(-1px, -1px) }
+            60% { transform: translate(2px, 1px) }
+            80% { transform: translate(1px, -1px) }
+            100% { transform: translate(0) }
+        }
+
+        /* 3D Canvas Background */
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            background: radial-gradient(circle at center, #051020 0%, #010205 100%);
+        }
+
+        /* Main UI Container - Full 3D Perspective Grid */
+        #ui-layer {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            padding: 2vw;
+            pointer-events: none; /* Let clicks pass through to panels */
+            perspective: 2000px;
+        }
+
+        /* Side Wrapper for 3D Transforms */
+        .side-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5vh;
+            width: 28vw;
+            height: 100%;
+            pointer-events: auto;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+        }
+
+        .side-wrapper.left {
+            transform: rotateY(15deg) translateZ(50px);
+        }
+
+        .side-wrapper.right {
+            transform: rotateY(-15deg) translateZ(50px);
+        }
+
+        /* Panel Syling */
         .panel {
             background: var(--panel-bg);
-            border: 1px solid var(--border);
-            border-radius: 4px;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            box-shadow: 0 0 20px var(--panel-glow), inset 0 0 15px rgba(0, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             position: relative;
             overflow: hidden;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: inset 0 0 20px rgba(0, 242, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto;
+            transition: all 0.3s ease;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+        }
+
+        .panel:hover {
+            box-shadow: 0 0 30px var(--panel-glow), inset 0 0 25px rgba(0, 255, 255, 0.1);
+            border-color: var(--cyan);
+            transform: translateZ(20px);
         }
 
         .panel-header {
-            padding: 8px 12px;
-            background: rgba(0, 242, 255, 0.1);
-            border-bottom: 1px solid var(--border);
+            background: rgba(0, 255, 255, 0.1);
+            padding: 8px 15px;
             font-family: 'Orbitron', sans-serif;
-            font-size: 0.7rem;
+            font-size: 12px;
+            font-weight: 700;
             letter-spacing: 2px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Top Header */
-        header {
-            grid-column: 1 / -1;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
-            border-bottom: 2px solid var(--accent);
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
-        }
-
-        .logo-text {
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 900;
-            font-size: 1.8rem;
-            letter-spacing: 4px;
-            background: linear-gradient(180deg, #fff 0%, var(--accent) 50%, #fff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--cyan);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.2);
             text-transform: uppercase;
-        }
-
-        .dripping-gold {
-            color: var(--gold);
-            -webkit-text-fill-color: initial;
-            text-shadow: 0 0 15px rgba(255, 204, 0, 0.7);
-            position: relative;
-            animation: drip-pulse 3s infinite ease-in-out;
-        }
-
-        @keyframes drip-pulse {
-            0%, 100% { text-shadow: 0 0 10px var(--gold); }
-            50% { text-shadow: 0 0 30px #fff, 0 0 50px var(--gold); }
-        }
-
-        .dripping-gold::after {
-            content: 'DRIPPING';
-            position: absolute;
-            left: 0; top: 0;
-            color: rgba(255, 204, 0, 0.3);
-            filter: blur(5px);
-            transform: translateY(5px);
-            z-index: -1;
-        }
-
-        /* Core visualization */
-        main {
-            grid-column: 2;
-            grid-row: 2;
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            position: relative;
-            background: rgba(0,0,0,0.6);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            box-shadow: 0 0 50px rgba(0, 242, 255, 0.1);
-            overflow: hidden;
         }
 
-        #bg-slideshow {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: -1;
-            opacity: 0.4;
-            transition: 1s ease-in-out;
-            background-size: cover;
-            background-position: center;
+        .panel-header::after {
+            content: '';
+            display: block;
+            width: 30px;
+            height: 2px;
+            background: var(--cyan);
+            box-shadow: 0 0 10px var(--cyan);
         }
 
-        #douglas-visual {
-            width: 500px;
-            height: 400px;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.1s ease-out;
-        }
-
-        .brain-core {
-            position: absolute;
-            width: 120px; height: 120px;
-            background: rgba(0, 242, 255, 0.05);
-            border: 2px solid var(--accent);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 40px rgba(0, 242, 255, 0.3);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.6rem;
-            color: var(--accent);
-        }
-
-        #brain-center { z-index: 10; width: 150px; height: 150px; font-size: 0.8rem;}
-        #brain-left { transform: translateX(-180px) rotateY(-20deg); opacity: 0.8; }
-        #brain-right { transform: translateX(180px) rotateY(20deg); opacity: 0.8; }
-
-        #heartbeat-visual {
-            position: absolute;
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(255, 0, 255, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            animation: pulse-heart 1.5s infinite;
-        }
-
-        @keyframes pulse-heart {
-            0%, 100% { transform: scale(1); filter: blur(5px); }
-            50% { transform: scale(1.15); filter: blur(15px); }
-        }
-
-        /* Mission Form Style */
-        .mission-form {
+        .panel-content {
             padding: 15px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-main);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--cyan) transparent;
+        }
+
+        /* Specific Panels */
+        .panel-about { flex: 1.2; }
+        .panel-groups { flex: 1; }
+        .panel-marketplace { flex: 0.8; }
+        .panel-affiliate { flex: 1.5; }
+
+        .panel-marketing { flex: 1; }
+        .panel-monitor { flex: 1.5; }
+        .panel-files { flex: 0.8; }
+        .panel-account { flex: 1.2; }
+
+        /* Typography & Decor */
+        h3 { font-family: 'Orbitron', sans-serif; font-size: 11px; color: var(--gold); margin-bottom: 8px; letter-spacing: 1px; }
+        
+        .stat-row {
             display: flex;
-            flex-direction: column;
-            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed rgba(255,255,255,0.1);
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
         }
-        .mission-form input, .mission-form textarea {
-            background: #000;
-            border: 1px solid var(--border);
-            color: var(--accent);
-            padding: 8px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-        }
-        .mission-form button {
-            background: var(--accent);
-            color: #000;
+
+        .stat-label { color: var(--text-muted); text-transform: uppercase; }
+        .stat-val { color: var(--cyan); }
+        .stat-val.gold { color: var(--gold); }
+        .stat-val.purple { color: var(--purple); }
+        .stat-val.success { color: var(--success); }
+
+        .btn-action {
+            width: 100%;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
             font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
             font-weight: bold;
-            border: none;
             padding: 10px;
+            margin-top: 10px;
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 2px;
-            transition: 0.3s;
-        }
-        .mission-form button:hover {
-            box-shadow: 0 0 15px var(--accent);
-        }
-        #canvas3d {
-            width: 100%; height: 100%;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Lateral Panels */
-        .side-panel {
+        .btn-action:hover {
+            background: var(--cyan);
+            color: #000;
+            box-shadow: 0 0 20px var(--cyan);
+        }
+
+        .input-sci {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: var(--cyan);
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            padding: 8px;
+            margin-bottom: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-sci:focus { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,255,255,0.2); }
+
+        /* World Map Monitor */
+        .world-map-sim {
+            height: 120px;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/4/41/Simple_world_map.svg') no-repeat center center;
+            background-size: contain;
+            opacity: 0.5;
+            filter: invert(1) sepia(1) hue-rotate(180deg) saturate(3) brightness(1.5);
+            position: relative;
+            margin: 10px 0;
+            border: 1px solid rgba(0,255,255,0.2);
+        }
+
+        .ping {
+            position: absolute;
+            width: 4px; height: 4px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 10px 2px var(--gold);
+            animation: ping-anim 2s infinite;
+        }
+
+        @keyframes ping-anim {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+
+        /* Center Hologram Logo Elements */
+        #center-display {
+            position: fixed;
+            top: 10vh;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            text-align: center;
+            pointer-events: none;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            align-items: center;
         }
 
-        .stat-card {
-            padding: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .logo-main {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5vw;
+            font-weight: 900;
+            letter-spacing: 1vw;
+            color: transparent;
+            -webkit-text-stroke: 2px var(--cyan);
+            text-transform: uppercase;
+            filter: drop-shadow(0 0 20px rgba(0, 242, 255, 0.8));
+            position: relative;
+            line-height: 1.1;
+            transform-style: preserve-3d;
+            animation: float 6s ease-in-out infinite;
         }
 
-        .stat-label { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; }
-        .stat-value { font-family: 'JetBrains Mono', monospace; color: var(--accent); margin-top: 4px;}
-
-        /* Bottom Console */
-        footer {
-            grid-column: 1 / -1;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.5);
+        .logo-main .dripping-gold {
+            background: linear-gradient(180deg, #ffea00 0%, #ff9500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            -webkit-text-stroke: 0;
+            filter: drop-shadow(0 0 25px rgba(255, 204, 0, 0.8));
+            position: relative;
+            display: inline-block;
         }
 
-        .console {
-            height: 100%;
-            background: #000;
-            border: 1px solid #111;
-            padding: 10px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            color: #22c55e;
-            overflow-y: auto;
+        .subtitle {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.8vw;
+            letter-spacing: 8px;
+            color: var(--text-main);
+            transform: translateY(-10px);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
         }
 
-        .parallax-bg {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(0, 242, 255, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(255, 0, 255, 0.05) 0%, transparent 40%);
-            z-index: -1;
+        .status-badge {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            font-family: 'Space Mono', monospace;
+            padding: 5px 15px;
+            font-size: 12px;
+            margin-top: 20px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            animation: blink 2s infinite;
         }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Central Bottom Core */
+        #core-container {
+            position: fixed;
+            bottom: -5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 4;
+            width: 40vw;
+            height: 40vh;
+            pointer-events: none;
+        }
+
+        /* Progress Bars */
+        .progress-bar-container {
+            width: 100%; height: 4px; background: rgba(0,0,0,0.5); margin: 5px 0 10px; border-radius: 2px; overflow: hidden;
+        }
+        .progress-bar { height: 100%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+        .progress-bar.gold { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+        .progress-bar.purple { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+
+        /* Page Transition Glitch */
+        #glitch-transition {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; z-index: 10000; pointer-events: none; opacity: 0;
+            display: none; mix-blend-mode: exclusion;
+        }
+
+        .glitch-anim {
+            display: block !important;
+            animation: fullGlitch 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes fullGlitch {
+            0% { opacity: 0; background: transparent; transform: scale(1); filter: contrast(1) invert(0); }
+            10% { opacity: 1; background: #00f2ff; transform: scale(1.05) translate(-20px, 15px) skewX(20deg); filter: contrast(2) invert(1); }
+            20% { opacity: 1; background: #ff0055; transform: scale(0.95) translate(20px, -15px) skewX(-20deg); }
+            30% { opacity: 1; background: transparent; transform: scale(1.1) skewY(10deg); filter: contrast(1.5) hue-rotate(90deg); }
+            40% { opacity: 1; background: #000; transform: scale(1.2) translate(-15px, -10px); }
+            50% { opacity: 0.8; background: #fff; mix-blend-mode: difference; transform: scale(1) translate(15px, 20px) skewX(40deg); }
+            60% { opacity: 1; background: #d000ff; mix-blend-mode: overlay; transform: scale(1.02); }
+            80% { opacity: 1; background: #00f2ff; transform: translate(-10px, 10px) skewX(-10deg); }
+            100% { opacity: 1; background: #03040c; transform: translate(0); filter: none; mix-blend-mode: normal; }
+        }
+        
+        /* Intro Background Anim */
+        #spline-intro {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.5;
+        }
+
     </style>
 </head>
 <body>
-    <!-- 5 Metal Doors Intro -->
-    <div id="intro-overlay">
-        <div class="door-layer" id="layer-1"><div class="door left"></div><div class="door right"></div></div>
-        <div class="door-layer" id="layer-2"><div class="door left"></div><div class="door right"></div></div>
-        <div class="door-layer" id="layer-3"><div class="door left"></div><div class="door right"></div></div>
-        <div class="door-layer" id="layer-4"><div class="door left"></div><div class="door right"></div></div>
-        <div class="door-layer" id="layer-5"><div class="door left"></div><div class="door right"></div></div>
+
+    <!-- OS Boot Sequence -->
+    <div id="boot-sequence">
+        <spline-viewer id="spline-intro" url="https://prod.spline.design/kYnLmsUq8oR4Q4P7/scene.splinecode"></spline-viewer>
+        <div id="boot-log"></div>
     </div>
 
-    <div id="agency-hub">
-        <div class="parallax-bg"></div>
+    <!-- WebGL ThreeJS Background -->
+    <div id="canvas-container"></div>
+
+    <!-- Center Screen Graphics -->
+    <div id="center-display">
+        <div class="logo-main">
+            KINGS <br><span class="dripping-gold">DRIPPING</span> SWAG
+        </div>
+        <div class="subtitle">AI DEVELOPMENT HUB</div>
+        <div class="status-badge">SYSTEM STATUS: OPERATIONAL</div>
+    </div>
+
+    <!-- Central Interactive Core (Rendered by ThreeJS inside core-container) -->
+    <div id="core-container"></div>
+
+    <!-- Main UI Layout -->
+    <div id="ui-layer">
         
-        <header class="panel">
-            <div class="logo-text">KINGS <span class="dripping-gold">DRIPPING</span> SWAG</div>
-            <div style="font-family: 'Orbitron'; font-size: 0.8rem; color: var(--muted)">AI MISSION CONTROL // v1.0.4</div>
-        </header>
-
-        <aside class="side-panel">
-            <div class="panel" style="flex: 1.5">
-                <div class="panel-header">DIAGNOSTICS <span>[ONLINE]</span></div>
-                <div class="stat-card"><div class="stat-label">Neural Capacity</div><div class="stat-value">84.2 TFlops</div></div>
-                <div class="stat-card"><div class="stat-label">Subagent Latency</div><div class="stat-value">4ms</div></div>
-                <div class="stat-card"><div class="stat-label">Buffer Health</div><div class="stat-value">99.9%</div></div>
-                <div class="stat-card"><div class="stat-label">Branding Status</div><div class="stat-value" style="color:var(--gold)">VERIFIED // CORRECTED</div></div>
-            </div>
-            <div class="panel" style="flex: 1">
-                <div class="panel-header">MARKETING HUB</div>
-                <div class="stat-card">
-                    <div class="stat-label">Outreach Algorithms</div>
-                    <div style="font-size: 0.65rem; color: var(--accent); margin-top: 4px;">AETHERFLOW DIGITAL: ACTIVE</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Lead Momentum</div>
-                    <div class="stat-value" style="color: var(--secondary)">+142% Growth</div>
+        <!-- Left Side Panels -->
+        <div class="side-wrapper left">
+            
+            <div class="panel panel-about" onclick="transitionTo('/pages/about/index.html')" style="cursor: pointer;">
+                <div class="panel-header">ABOUT US <span>[v.9.4.2]</span></div>
+                <div class="panel-content">
+                    <h3>Evolutionary Timeline: Our Origins, Our Algorithms</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px;">
+                        Initiated as a collective of advanced neural networks, Kings Dripping Swag AI Development Hub represents the pinnacle of automated software engineering. We don't just write code; we synthesize futures.
+                    </p>
+                    <div class="stat-row"><span class="stat-label">Neural Capacity</span><span class="stat-val">128.4 PetaFLOPS</span></div>
+                    <div class="stat-row"><span class="stat-label">Subagent Swarm</span><span class="stat-val purple">9,420 Active</span></div>
+                    <div class="progress-bar-container"><div class="progress-bar purple" style="width: 85%;"></div></div>
                 </div>
             </div>
-        </aside>
 
-        <main>
-            <div id="bg-slideshow" style="background-image: url('/assets/images/dash_bg_1.jpg')"></div>
-            <div id="douglas-visual" style="width: 100%; height: 100%; position: relative;">
-                <canvas id="canvas3d"></canvas>
+            <div class="panel panel-groups" onclick="transitionTo('/pages/groups/index.html')" style="cursor: pointer;">
+                <div class="panel-header">GROUPS & FORUM</div>
+                <div class="panel-content">
+                    <h3>Deep Learning Logs</h3>
+                    <div class="stat-row"><span class="stat-label">Thread: Sentinel.ai</span><span class="stat-val gold">+41 MSGS</span></div>
+                    <div class="stat-row"><span class="stat-label">Thread: UX Automation</span><span class="stat-val success">RESOLVED</span></div>
+                    <div class="stat-row"><span class="stat-label">Live Nodes Connection</span><span class="stat-val">842 Users</span></div>
+                    <button class="btn-action" onclick="event.stopPropagation(); transitionTo('/pages/groups/index.html')">Enter Nexus</button>
+                </div>
             </div>
-            <div class="subtitle" style="position: absolute; bottom: 20px; font-family: 'Orbitron'; letter-spacing: 5px; color: var(--accent); pointer-events: none; text-shadow: 0 0 10px var(--accent); background: rgba(0,0,0,0.5); padding: 5px 20px; border-radius: 20px;">QUANTUM CORE ONLINE</div>
-        </main>
 
-        <aside class="side-panel">
-            <div class="panel" style="flex: 1">
+            <div class="panel panel-marketplace" onclick="transitionTo('/pages/marketplace/index.html')" style="cursor: pointer;">
+                <div class="panel-header">MARKETPLACE</div>
+                <div class="panel-content">
+                    <h3>Acquire AI Modules</h3>
+                    <div class="stat-row"><span class="stat-label">Dripping Core Matrix</span><span class="stat-val gold">4.2 ETH</span></div>
+                    <div class="stat-row"><span class="stat-label">VoxCode Synth</span><span class="stat-val gold">1.8 ETH</span></div>
+                </div>
+            </div>
+
+            <div class="panel panel-affiliate" onclick="transitionTo('/pages/affiliate/index.html')" style="cursor: pointer;">
                 <div class="panel-header">AFFILIATE PROGRAM</div>
-                <div id="subagent-list" style="padding: 10px; font-size: 0.7rem;">
-                    <div style="color:var(--muted); margin-bottom: 5px;">> NETWORK_ID: 0xKDSAI</div>
-                    <div style="color:var(--gold); margin-bottom: 5px;">> PERFORMANCE_INDEX: AAA+</div>
-                    <div style="color:var(--accent); margin-bottom: 5px;">> NEW_PROTOCOLS: READY</div>
+                <div class="panel-content">
+                    <h3>Affiliate Network Performance Index</h3>
+                    <div class="stat-row"><span class="stat-label">Robot Collective</span><span class="stat-val success">Tier S</span></div>
+                    <div class="stat-row"><span class="stat-label">KINGS DRIPPING SWAG AETHERNET</span><span class="stat-val">Tier A+</span></div>
+                    <div class="stat-row"><span class="stat-label">Cyberdyne Logistics</span><span class="stat-val purple">Tier B</span></div>
+                    
+                    <h3 style="margin-top: 15px; color: var(--cyan)">New Affiliate Deployment Protocols</h3>
+                    <p style="font-size: 11px; color: var(--text-muted);">Awaiting matrix confirmation to deploy new referral nodes.</p>
+                    <button class="btn-action" style="border-color: var(--gold); color: var(--gold)">Execute Deployment</button>
                 </div>
             </div>
-            <div class="panel" style="flex: 1">
-                <div class="panel-header">ENLIST IN THE AGENCY</div>
-                <form class="mission-form" id="lead-form">
-                    <input type="text" id="lead-name" placeholder="YOUR NAME" required>
-                    <input type="email" id="lead-email" placeholder="EMAIL ADDRESS" required>
-                    <textarea id="lead-project" placeholder="PROJECT BRIEF (What are we building?)" rows="3"></textarea>
-                    <button type="submit">SUBMIT BRIEFING</button>
-                    <div id="form-msg" style="font-size: 0.6rem; color: var(--gold); margin-top: 5px;"></div>
-                </form>
-            </div>
-        </aside>
 
-        <footer class="panel">
-            <div class="panel-header">CENTRAL COMMAND STREAM</div>
-            <div class="console" id="console-stream">
-                KINGS DRIPPING SWAG AI DEVELOPMENT HUB INITIALIZED...<br>
-                READY FOR COMMANDS.
+        </div>
+
+        <!-- Right Side Panels -->
+        <div class="side-wrapper right">
+            
+            <div class="panel panel-marketing" onclick="transitionTo('/pages/marketing/index.html')" style="cursor: pointer;">
+                <div class="panel-header">MARKETING</div>
+                <div class="panel-content">
+                    <h3>Outreach Algorithms</h3>
+                    <p style="font-size: 12px; margin-bottom: 10px;">AETHERFLOW DIGITAL: Evolved for Replication.</p>
+                    <div class="stat-row"><span class="stat-label">Campaign Alpha</span><span class="stat-val success">14,209 IMPRESSIONS</span></div>
+                    <div class="stat-row"><span class="stat-label">Conversion Rate</span><span class="stat-val gold">24.8%</span></div>
+                    <div class="progress-bar-container"><div class="progress-bar gold" style="width: 92%;"></div></div>
+                </div>
             </div>
-        </footer>
+
+            <div class="panel panel-monitor" onclick="transitionTo('/pages/monitor/index.html')" style="cursor: pointer;">
+                <div class="panel-header">MONITORIZATION</div>
+                <div class="panel-content">
+                    <h3>Global Deployment Monitor</h3>
+                    <div class="world-map-sim" id="world-map">
+                        <!-- Pings added via JS -->
+                    </div>
+                    <div class="stat-row"><span class="stat-label">Active Nodes</span><span class="stat-val">10,491</span></div>
+                    <div class="stat-row"><span class="stat-label">Network Latency</span><span class="stat-val success">12ms</span></div>
+                </div>
+            </div>
+
+            <div class="panel panel-files" onclick="transitionTo('/pages/files/index.html')" style="cursor: pointer;">
+                <div class="panel-header">AI FILE MANAGEMENT</div>
+                <div class="panel-content">
+                    <div class="stat-row"><span class="stat-label">Storage Cluster 1</span><span class="stat-val">84% FULL</span></div>
+                    <div class="progress-bar-container"><div class="progress-bar" style="width: 84%;"></div></div>
+                    <div class="stat-row"><span class="stat-label">Quantum DB</span><span class="stat-val">SYNCED</span></div>
+                    <button class="btn-action" onclick="event.stopPropagation(); transitionTo('/pages/files/index.html')">Access Archives</button>
+                </div>
+            </div>
+
+            <div class="panel panel-account" onclick="transitionTo('/pages/account/index.html')" style="cursor: pointer;">
+                <div class="panel-header">CREATE ACCOUNT & LOGIN</div>
+                <div class="panel-content">
+                    <h3>Secure Access Portal</h3>
+                    <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 10px;">AUTHENTICATION REQUIRED - AUTHORIZE NEW REPLICANT PROFILE OR LOG IN EXISTING ENTITY</p>
+                    <form id="login-form">
+                        <input type="text" class="input-sci" placeholder="IDENTITY VECTOR (EMAIL)">
+                        <input type="password" class="input-sci" placeholder="ENCRYPTION KEY (PASSWORD)">
+                        <button type="submit" class="btn-action" style="border-color: var(--purple); color: var(--purple)">Initialize Handshake</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
     </div>
+
+    <div id="glitch-transition"></div>
+
+    <script>
+        // Glitch Transition Function injected in global scope
+        window.transitionTo = function(url) {
+            const glitch = document.getElementById('glitch-transition');
+            glitch.classList.add('glitch-anim');
+            
+            const uiLayer = document.getElementById('ui-layer');
+            uiLayer.style.transform = `scale(1.2) rotate(3deg)`;
+            uiLayer.style.filter = "contrast(200%) hue-rotate(90deg) blur(5px)";
+            uiLayer.style.opacity = "0";
+
+            // Boot log rapid spam to simulate system error before transition
+            const btLog = document.getElementById('boot-sequence');
+            btLog.style.display = 'flex';
+            btLog.style.opacity = '1';
+            btLog.style.background = 'transparent';
+            btLog.style.zIndex = '10001';
+            btLog.innerHTML = `<h1 style="color:var(--danger); font-size:10vw; animation: glitch 0.1s infinite;">CRITICAL OVERRIDE</h1>`;
+
+            setTimeout(() => {
+                window.location.href = url;
+            }, 550);
+        };
+    </script>
 
     <script type="module">
         import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
         import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
         import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const layers = [1, 2, 3, 4, 5];
-            let currentLayer = 0;
+        // --- Boot Sequence Simulation ---
+        const bootLog = document.getElementById('boot-log');
+        const bootOverlay = document.getElementById('boot-sequence');
+        const splineIntro = document.getElementById('spline-intro');
+        
+        const bootMessages = [
+            "INIT SYNERGY BIOS ver 9.0...",
+            "LOADING QUANTUM DRIVERS...",
+            "MOUNTING AETHERFLOW FILE SYSTEM... OK",
+            "CONNECTING TO NEURAL NETWORKS...",
+            "AUTHENTICATING KINGS DRIPPING SWAG HUB...",
+            "WARNING: HIGH GLAMOUR DETECTED.",
+            "CALIBRATING SPLINE DYNAMICS... 100%",
+            "LAUNCHING MISSION CONTROL UI..."
+        ];
 
-            const openNextDoor = () => {
-                if (currentLayer < layers.length) {
-                    const layerId = `layer-${layers[currentLayer]}`;
-                    const layer = document.getElementById(layerId);
-                    layer.classList.add('open');
+        let msgIndex = 0;
+        function showNextBootMessage() {
+            if (msgIndex < bootMessages.length) {
+                const el = document.createElement('div');
+                el.className = 'boot-line';
+                el.innerText = `> ${bootMessages[msgIndex]}`;
+                if (bootLog) bootLog.appendChild(el);
+                if (msgIndex === bootMessages.length - 2 && el) el.classList.add('boot-glitch');
+                msgIndex++;
+                setTimeout(showNextBootMessage, 100 + Math.random() * 150);
+            } else {
+                
+                // Spline burst effect
+                if(splineIntro) {
+                    splineIntro.style.transform = "scale(1.5)";
+                    splineIntro.style.filter = "contrast(200%) brightness(200%)";
+                }
+
+                setTimeout(() => {
+                    bootOverlay.style.background = 'transparent';
+                    if (bootLog) bootLog.style.opacity = '0';
                     
-                    // Progressive reveal sound effect simulation by console log
-                    console.log(`[SYS] Door ${layers[currentLayer]} unlocked.`);
-
-                    currentLayer++;
-                    setTimeout(openNextDoor, 900);
-                } else {
-                    const overlay = document.getElementById('intro-overlay');
-                    overlay.style.transition = 'opacity 1.5s ease-out, transform 1.5s cubic-bezier(0.19, 1, 0.22, 1)';
-                    overlay.style.opacity = '0';
-                    overlay.style.transform = 'scale(1.5) translateZ(1000px)';
+                    // Trigger a brief global glitch
+                    document.getElementById('glitch-transition').classList.add('glitch-anim');
                     
                     setTimeout(() => {
-                        overlay.style.display = 'none';
-                        const hub = document.getElementById('agency-hub');
-                        hub.style.display = 'grid';
+                        document.getElementById('glitch-transition').classList.remove('glitch-anim');
+                        bootOverlay.style.opacity = '0';
                         setTimeout(() => {
-                            hub.style.opacity = '1';
-                            initThreeJS(); // Start Three.js antigravity scene
-                        }, 100);
-                    }, 1500);
-                }
-            };
-
-            // Start intro
-            setTimeout(openNextDoor, 1500);
-
-            // Three.js Antigravity Scene
-            let scene, camera, renderer, composer, controls;
-            let particles, quantumCore, gravityRings = [];
-            let mouseX = 0, mouseY = 0;
-            let targetRotationX = 0, targetRotationY = 0;
-
-            function initThreeJS() {
-                const canvas = document.getElementById('canvas3d');
-                const container = document.getElementById('douglas-visual');
-                
-                // Scene setup
-                scene = new THREE.Scene();
-                scene.fog = new THREE.FogExp2(0x030305, 0.002);
-
-                // Camera
-                camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-                camera.position.z = 50;
-
-                // Renderer
-                renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-                renderer.setSize(container.clientWidth, container.clientHeight);
-                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-                renderer.toneMapping = THREE.ReinhardToneMapping;
-
-                // Post-processing
-                composer = new EffectComposer(renderer);
-                const renderPass = new RenderPass(scene, camera);
-                composer.addPass(renderPass);
-
-                const bloomPass = new UnrealBloomPass(
-                    new THREE.Vector2(container.clientWidth, container.clientHeight),
-                    1.5, 0.4, 0.85
-                );
-                bloomPass.threshold = 0.1;
-                bloomPass.strength = 1.2;
-                bloomPass.radius = 0.5;
-                composer.addPass(bloomPass);
-
-                // Controls
-                controls = new OrbitControls(camera, renderer.domElement);
-                controls.enableDamping = true;
-                controls.dampingFactor = 0.05;
-                controls.enableZoom = false;
-                controls.autoRotate = true;
-                controls.autoRotateSpeed = 0.5;
-
-                // Create antigravity elements
-                createQuantumCore();
-                createAntigravityParticles();
-                createGravityRings();
-                createNeuralNetwork();
-
-                // Mouse tracking
-                document.addEventListener('mousemove', onMouseMove);
-                window.addEventListener('resize', onWindowResize);
-
-                console.log("[DOUGLAS] Neural Core Engaged - Three.js Antigravity Mode");
-                startSlideshow();
-                animate();
-            }
-
-            function createQuantumCore() {
-                // Central quantum core - glowing icosahedron
-                const geometry = new THREE.IcosahedronGeometry(8, 1);
-                const material = new THREE.MeshStandardMaterial({
-                    color: 0x00f2ff,
-                    emissive: 0x00f2ff,
-                    emissiveIntensity: 0.8,
-                    wireframe: true,
-                    transparent: true,
-                    opacity: 0.9
-                });
-                quantumCore = new THREE.Mesh(geometry, material);
-                scene.add(quantumCore);
-
-                // Inner glow sphere
-                const innerGeo = new THREE.SphereGeometry(5, 32, 32);
-                const innerMat = new THREE.MeshBasicMaterial({
-                    color: 0x00f2ff,
-                    transparent: true,
-                    opacity: 0.3
-                });
-                const innerCore = new THREE.Mesh(innerGeo, innerMat);
-                scene.add(innerCore);
-
-                // Point lights
-                const light1 = new THREE.PointLight(0x00f2ff, 2, 100);
-                light1.position.set(0, 0, 0);
-                scene.add(light1);
-
-                const light2 = new THREE.PointLight(0xff00ff, 1, 80);
-                light2.position.set(20, 20, 20);
-                scene.add(light2);
-
-                const ambientLight = new THREE.AmbientLight(0x111122, 0.5);
-                scene.add(ambientLight);
-            }
-
-            function createAntigravityParticles() {
-                // Floating particles that defy gravity
-                const particleCount = 2000;
-                const positions = new Float32Array(particleCount * 3);
-                const colors = new Float32Array(particleCount * 3);
-                const sizes = new Float32Array(particleCount);
-
-                const color1 = new THREE.Color(0x00f2ff); // Cyan
-                const color2 = new THREE.Color(0xff00ff); // Magenta
-                const color3 = new THREE.Color(0xffcc00); // Gold
-
-                for (let i = 0; i < particleCount; i++) {
-                    const i3 = i * 3;
-                    
-                    // Spherical distribution with antigravity effect
-                    const radius = 20 + Math.random() * 60;
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi = Math.acos(2 * Math.random() - 1);
-                    
-                    positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-                    positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta) * Math.abs(Math.sin(Date.now() * 0.001 + i));
-                    positions[i3 + 2] = radius * Math.cos(phi);
-
-                    // Random colors
-                    const mixColor = Math.random();
-                    let color;
-                    if (mixColor < 0.5) color = color1;
-                    else if (mixColor < 0.8) color = color2;
-                    else color = color3;
-
-                    colors[i3] = color.r;
-                    colors[i3 + 1] = color.g;
-                    colors[i3 + 2] = color.b;
-
-                    sizes[i] = Math.random() * 2 + 0.5;
-                }
-
-                const geometry = new THREE.BufferGeometry();
-                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-                geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-                const material = new THREE.PointsMaterial({
-                    size: 0.8,
-                    vertexColors: true,
-                    transparent: true,
-                    opacity: 0.8,
-                    blending: THREE.AdditiveBlending,
-                    sizeAttenuation: true
-                });
-
-                particles = new THREE.Points(geometry, material);
-                scene.add(particles);
-            }
-
-            function createGravityRings() {
-                // Anti-gravity rings that float and rotate
-                const ringColors = [0x00f2ff, 0xff00ff, 0xffcc00];
-                const ringRadii = [15, 22, 30];
-
-                for (let i = 0; i < 3; i++) {
-                    const geometry = new THREE.TorusGeometry(ringRadii[i], 0.3, 16, 100);
-                    const material = new THREE.MeshStandardMaterial({
-                        color: ringColors[i],
-                        emissive: ringColors[i],
-                        emissiveIntensity: 0.5,
-                        transparent: true,
-                        opacity: 0.6
-                    });
-                    const ring = new THREE.Mesh(geometry, material);
-                    ring.rotation.x = Math.PI / 2 + (i * 0.3);
-                    ring.rotation.y = i * 0.5;
-                    ring.userData = { speed: 0.002 * (i + 1), tiltSpeed: 0.001 };
-                    gravityRings.push(ring);
-                    scene.add(ring);
-                }
-            }
-
-            function createNeuralNetwork() {
-                // Neural network connections
-                const nodeCount = 50;
-                const nodes = [];
-                const nodeGeometry = new THREE.SphereGeometry(0.5, 8, 8);
-                const nodeMaterial = new THREE.MeshBasicMaterial({ color: 0x00f2ff });
-
-                for (let i = 0; i < nodeCount; i++) {
-                    const node = new THREE.Mesh(nodeGeometry, nodeMaterial.clone());
-                    const angle = (i / nodeCount) * Math.PI * 2;
-                    const radius = 25 + Math.random() * 15;
-                    node.position.set(
-                        Math.cos(angle) * radius,
-                        (Math.random() - 0.5) * 30,
-                        Math.sin(angle) * radius
-                    );
-                    node.userData = {
-                        originalY: node.position.y,
-                        phase: Math.random() * Math.PI * 2,
-                        speed: 0.5 + Math.random() * 0.5
-                    };
-                    nodes.push(node);
-                    scene.add(node);
-                }
-
-                // Create connections between nearby nodes
-                const lineMaterial = new THREE.LineBasicMaterial({
-                    color: 0x00f2ff,
-                    transparent: true,
-                    opacity: 0.2
-                });
-
-                for (let i = 0; i < nodes.length; i++) {
-                    for (let j = i + 1; j < nodes.length; j++) {
-                        const dist = nodes[i].position.distanceTo(nodes[j].position);
-                        if (dist < 15) {
-                            const geometry = new THREE.BufferGeometry().setFromPoints([
-                                nodes[i].position,
-                                nodes[j].position
-                            ]);
-                            const line = new THREE.Line(geometry, lineMaterial);
-                            scene.add(line);
-                        }
-                    }
-                }
-            }
-
-            function onMouseMove(event) {
-                const container = document.getElementById('douglas-visual');
-                const rect = container.getBoundingClientRect();
-                mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-                mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-            }
-
-            function onWindowResize() {
-                const container = document.getElementById('douglas-visual');
-                camera.aspect = container.clientWidth / container.clientHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(container.clientWidth, container.clientHeight);
-                composer.setSize(container.clientWidth, container.clientHeight);
-            }
-
-            function animate() {
-                requestAnimationFrame(animate);
-                const time = Date.now() * 0.001;
-
-                // Quantum core rotation
-                if (quantumCore) {
-                    quantumCore.rotation.x += 0.005;
-                    quantumCore.rotation.y += 0.008;
-                    quantumCore.scale.setScalar(1 + Math.sin(time * 2) * 0.05);
-                }
-
-                // Gravity rings rotation
-                gravityRings.forEach((ring, i) => {
-                    ring.rotation.z += ring.userData.speed;
-                    ring.rotation.x += ring.userData.tiltSpeed * Math.sin(time + i);
-                });
-
-                // Particle animation - antigravity floating
-                if (particles) {
-                    particles.rotation.y += 0.0005;
-                    const positions = particles.geometry.attributes.position.array;
-                    for (let i = 0; i < positions.length; i += 3) {
-                        positions[i + 1] += Math.sin(time + positions[i]) * 0.02;
-                    }
-                    particles.geometry.attributes.position.needsUpdate = true;
-                }
-
-                // Mouse interaction
-                targetRotationX = mouseY * 0.3;
-                targetRotationY = mouseX * 0.3;
-                
-                if (quantumCore) {
-                    quantumCore.rotation.x += (targetRotationX - quantumCore.rotation.x) * 0.05;
-                    quantumCore.rotation.y += (targetRotationY - quantumCore.rotation.y) * 0.05;
-                }
-
-                controls.update();
-                composer.render();
-            }
-
-            // Slideshow Logic
-            const images = [
-                '/assets/images/dash_bg_1.jpg',
-                '/assets/images/dash_bg_2.jpg',
-                '/assets/images/dash_bg_3.jpg',
-                '/assets/images/dash_bg_4.jpg'
-            ];
-            let currentImage = 0;
-            function startSlideshow() {
-                const bg = document.getElementById('bg-slideshow');
-                setInterval(() => {
-                    currentImage = (currentImage + 1) % images.length;
-                    
-                    // Fade out, change, fade in
-                    bg.style.opacity = '0';
-                    setTimeout(() => {
-                        bg.style.backgroundImage = `url('${images[currentImage]}')`;
-                        bg.style.opacity = '0.4';
-                    }, 1000);
-                }, 8000);
-            }
-
-            // Lead Form Handler
-            const leadForm = document.getElementById('lead-form');
-            leadForm.onsubmit = async (e) => {
-                e.preventDefault();
-                const btn = leadForm.querySelector('button');
-                const msg = document.getElementById('form-msg');
-                msg.textContent = 'TRANSMITTING BRIEFING...';
-                btn.disabled = true;
-                
-                const data = {
-                    name: document.getElementById('lead-name').value,
-                    email: document.getElementById('lead-email').value,
-                    project: document.getElementById('lead-project').value
-                };
-
-                try {
-                    const res = await fetch('/api/leads', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                    const result = await res.json();
-                    if (result.status === 'success') {
-                        msg.style.color = '#22c55e';
-                        msg.textContent = result.message || 'TRANSMISSION CONFIRMED.';
-                        leadForm.reset();
-                    } else {
-                        throw new Error(result.error || 'NETWORK_REJECTION');
-                    }
-                } catch (err) {
-                    msg.style.color = '#ef4444';
-                    msg.textContent = 'TRANSMISSION FAILED: ' + err.message;
-                } finally {
-                    btn.disabled = false;
-                }
-            };
-
-            // Diagnostic Button Handlers (Make buttons work)
-            document.querySelectorAll('.stat-card').forEach(card => {
-                card.style.cursor = 'pointer';
-                card.onclick = () => {
-                    const label = card.querySelector('.stat-label').textContent;
-                    const val = card.querySelector('.stat-value');
-                    console.log(`[SYS] Recalibrating ${label}...`);
-                    val.style.opacity = '0.5';
-                    setTimeout(() => {
-                        val.style.opacity = '1';
-                        if (label.includes('Neural')) val.textContent = (84 + Math.random()).toFixed(1) + ' TFlops';
-                        if (label.includes('Latency')) val.textContent = (Math.random() * 5).toFixed(1) + 'ms';
+                            if(splineIntro) splineIntro.remove();
+                            bootOverlay.style.display = 'none';
+                        }, 1000);
+                        initThreeJS();
                     }, 500);
-                };
+
+                }, 400);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            showNextBootMessage();
+            addMapPings();
+        });
+
+        // --- Random Pings on Map ---
+        function addMapPings() {
+            const map = document.getElementById('world-map');
+            setInterval(() => {
+                const ping = document.createElement('div');
+                ping.className = 'ping';
+                ping.style.left = (Math.random() * 90 + 5) + '%';
+                ping.style.top = (Math.random() * 90 + 5) + '%';
+                map.appendChild(ping);
+                setTimeout(() => ping.remove(), 2000);
+            }, 800);
+        }
+
+        // --- Interaction Effects ---
+        const form = document.getElementById('login-form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const original = btn.innerText;
+            btn.innerText = "ACCESS GRANTED";
+            btn.style.background = "var(--success)";
+            btn.style.color = "#000";
+            btn.style.borderColor = "var(--success)";
+            setTimeout(() => {
+                btn.innerText = original;
+                btn.style.background = "transparent";
+                btn.style.color = "var(--purple)";
+                btn.style.borderColor = "var(--purple)";
+            }, 3000);
+        });
+
+        // Mouse Parallax Effect for the Side Panels (Enhanced Depth)
+        let targetRotYLeft = 15;
+        let targetRotXLeft = 0;
+        let targetRotYRight = -15;
+        let targetRotXRight = 0;
+
+        let curRotYLeft = 15;
+        let curRotXLeft = 0;
+        let curRotYRight = -15;
+        let curRotXRight = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            const mouseX = e.clientX / window.innerWidth - 0.5;
+            const mouseY = e.clientY / window.innerHeight - 0.5;
+            
+            targetRotYLeft = 15 + mouseX * 25;
+            targetRotXLeft = -mouseY * 15;
+            
+            targetRotYRight = -15 + mouseX * 25;
+            targetRotXRight = -mouseY * 15;
+            
+            // Subtly move the center display too
+            const centerDisplay = document.getElementById('center-display');
+            if(centerDisplay) {
+                centerDisplay.style.transform = `translateX(-50%) translate3d(${mouseX * -30}px, ${mouseY * -30}px, 50px)`;
+            }
+        });
+
+        // Smooth parallax animation loop for panels
+        function animateParallax() {
+            curRotYLeft += (targetRotYLeft - curRotYLeft) * 0.1;
+            curRotXLeft += (targetRotXLeft - curRotXLeft) * 0.1;
+            curRotYRight += (targetRotYRight - curRotYRight) * 0.1;
+            curRotXRight += (targetRotXRight - curRotXRight) * 0.1;
+
+            const leftWrapper = document.querySelector('.side-wrapper.left');
+            const rightWrapper = document.querySelector('.side-wrapper.right');
+
+            if(leftWrapper) leftWrapper.style.transform = `rotateY(${curRotYLeft}deg) rotateX(${curRotXLeft}deg) translateZ(80px)`;
+            if(rightWrapper) rightWrapper.style.transform = `rotateY(${curRotYRight}deg) rotateX(${curRotXRight}deg) translateZ(80px)`;
+
+            requestAnimationFrame(animateParallax);
+        }
+        animateParallax();
+
+        // --- WebGL ThreeJS Futuristic Background & Central Core ---
+        function initThreeJS() {
+            // Main Background Scene
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x010205, 0.015);
+            
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 40;
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            container.appendChild(renderer.domElement);
+
+            // Post-processing for intense Glow
+            const renderScene = new RenderPass(scene, camera);
+            const composer = new EffectComposer(renderer);
+            composer.addPass(renderScene);
+
+            const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+            bloomPass.threshold = 0;
+            bloomPass.strength = 1.0;
+            bloomPass.radius = 0.8;
+            composer.addPass(bloomPass);
+
+            // 1. Grid Floor
+            const gridHelper = new THREE.GridHelper(200, 100, 0x00f2ff, 0x002233);
+            gridHelper.position.y = -15;
+            scene.add(gridHelper);
+
+            // 2. Floating Cyber Particles
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 3000;
+            const posArray = new Float32Array(particlesCount * 3);
+            const colorsArray = new Float32Array(particlesCount * 3);
+            const color1 = new THREE.Color(0x00f2ff);
+            const color2 = new THREE.Color(0xd000ff);
+
+            for(let i = 0; i < particlesCount * 3; i+=3) {
+                posArray[i] = (Math.random() - 0.5) * 150;
+                posArray[i+1] = (Math.random() - 0.5) * 100;
+                posArray[i+2] = (Math.random() - 0.5) * 150 - 20;
+
+                const mix = Math.random();
+                const col = mix > 0.5 ? color1 : color2;
+                colorsArray[i] = col.r;
+                colorsArray[i+1] = col.g;
+                colorsArray[i+2] = col.b;
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorsArray, 3));
+            
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.15,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+
+            // 3. Central Dripping Gold Core
+            const coreScene = new THREE.Scene();
+            const coreRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            const coreContainer = document.getElementById('core-container');
+            const coreCamera = new THREE.PerspectiveCamera(50, coreContainer.clientWidth / coreContainer.clientHeight, 0.1, 100);
+            
+            coreRenderer.setSize(coreContainer.clientWidth, coreContainer.clientHeight);
+            coreContainer.appendChild(coreRenderer.domElement);
+            coreCamera.position.y = 8;
+            coreCamera.position.z = 15;
+            coreCamera.lookAt(0, 0, 0);
+
+            // Golden Liquid Material
+            const goldMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffaa00,
+                emissive: 0xaa5500,
+                emissiveIntensity: 0.5,
+                metalness: 1.0,
+                roughness: 0.1,
+                envMapIntensity: 1.0
             });
 
-            // Console simulation
-            const consoleStream = document.getElementById('console-stream');
-            function logToConsole(text, type = 'info') {
-                const line = document.createElement('div');
-                line.style.color = type === 'error' ? '#ef4444' : type === 'success' ? '#22c55e' : '#22c55e';
-                line.textContent = `[${new Date().toLocaleTimeString()}] > ${text}`;
-                consoleStream.appendChild(line);
-                consoleStream.scrollTop = consoleStream.scrollHeight;
+            // The Pool (Torus + Sphere)
+            const poolGeo = new THREE.TorusGeometry(6, 1.5, 32, 100);
+            const poolMesh = new THREE.Mesh(poolGeo, new THREE.MeshStandardMaterial({
+                color: 0x222222, metalness: 0.8, roughness: 0.2, wireframe: true
+            }));
+            poolMesh.rotation.x = -Math.PI / 2;
+            coreScene.add(poolMesh);
+
+            const liquidGeo = new THREE.SphereGeometry(5.8, 64, 64);
+            const liquidMesh = new THREE.Mesh(liquidGeo, goldMaterial);
+            liquidMesh.scale.set(1, 0.2, 1);
+            liquidMesh.position.y = -0.5;
+            coreScene.add(liquidMesh);
+
+            // Drips
+            const drips = [];
+            for(let i=0; i<5; i++) {
+                const dripGeo = new THREE.SphereGeometry(0.8, 16, 16);
+                const drip = new THREE.Mesh(dripGeo, goldMaterial);
+                drip.position.set((Math.random()-0.5)*4, 5 + Math.random()*5, (Math.random()-0.5)*4);
+                coreScene.add(drip);
+                drips.push(drip);
             }
 
-            setInterval(() => {
-                const msgs = [
-                    "Checking neural links...",
-                    "Subagent Alpha heartbeat detected.",
-                    "Optimizing parallax depth...",
-                    "Branding check: KINGS DRIPPING SWAG - VALID.",
-                    "Douglas brains synchronized.",
-                    "Syncing memory blobs to Second Brain...",
-                    "Quantum coherence at 98.4%",
-                    "Parallel execution pool: 12 subagents active."
-                ];
-                logToConsole(msgs[Math.floor(Math.random()*msgs.length)]);
-            }, 5000);
-        });
+            // Core Lighting
+            const pointLight = new THREE.PointLight(0xffcc00, 5, 50);
+            pointLight.position.set(0, 5, 0);
+            coreScene.add(pointLight);
+            coreScene.add(new THREE.AmbientLight(0x111111));
+
+            // Core Post Processing
+            const coreComposer = new EffectComposer(coreRenderer);
+            coreComposer.addPass(new RenderPass(coreScene, coreCamera));
+            const coreBloom = new UnrealBloomPass(new THREE.Vector2(coreContainer.clientWidth, coreContainer.clientHeight), 2.0, 0.2, 0);
+            coreComposer.addPass(coreBloom);
+
+
+            // Resize Handlers
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                composer.setSize(window.innerWidth, window.innerHeight);
+
+                coreCamera.aspect = coreContainer.clientWidth / coreContainer.clientHeight;
+                coreCamera.updateProjectionMatrix();
+                coreRenderer.setSize(coreContainer.clientWidth, coreContainer.clientHeight);
+                coreComposer.setSize(coreContainer.clientWidth, coreContainer.clientHeight);
+            });
+
+            const clock = new THREE.Clock();
+
+            // Animation Loop
+            function animate() {
+                requestAnimationFrame(animate);
+                const elapsedTime = clock.getElapsedTime();
+
+                // Background Animation
+                particlesMesh.rotation.y = elapsedTime * 0.05;
+                gridHelper.position.z = (elapsedTime * 2) % 10; // moving floor effect
+
+                // Core Animation
+                poolMesh.rotation.z = elapsedTime * 0.2;
+                liquidMesh.scale.y = 0.2 + Math.sin(elapsedTime * 2) * 0.05;
+                
+                drips.forEach((drip, idx) => {
+                    drip.position.y -= 0.05 + idx * 0.01;
+                    drip.scale.setScalar(1 + Math.sin(elapsedTime * 5 + idx) * 0.2);
+                    if (drip.position.y < -1) {
+                        drip.position.y = 8 + Math.random() * 5;
+                        drip.position.x = (Math.random()-0.5)*4;
+                        drip.position.z = (Math.random()-0.5)*4;
+                    }
+                });
+
+                // Render both scenes
+                composer.render();
+                coreComposer.render();
+            }
+
+            animate();
+        }
     </script>
 </body>
 </html>
