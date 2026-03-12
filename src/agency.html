@@ -413,6 +413,26 @@
     <!-- Central Interactive Core (Rendered by ThreeJS inside core-container) -->
     <div id="core-container"></div>
 
+    <!-- Real-time Telemetry Ticker -->
+    <div id="telemetry-ticker">
+        <div class="ticker-label">SWARM TELEMETRY</div>
+        <div id="ticker-content">CONNECTING TO VERDANT CLUSTER...</div>
+    </div>
+
+    <!-- Dynamic Quantum Overlay (Slide-out Terminal) -->
+    <div id="quantum-overlay">
+        <div class="quantum-header">
+            <span id="quantum-title">QUANTUM DATA STREAM</span>
+            <span class="quantum-close" onclick="closeQuantum()">[TERMINATE]</span>
+        </div>
+        <div id="quantum-body">
+            <div id="quantum-log"></div>
+            <div class="quantum-footer">
+                <input type="text" id="quantum-cmd" placeholder="Execute directive..." onkeydown="if(event.key==='Enter') executeQuantumCmd()">
+            </div>
+        </div>
+    </div>
+
     <!-- Main UI Layout -->
     <div id="ui-layer">
         
@@ -865,6 +885,307 @@
 
             animate();
         }
+
+        // --- QUANTUM OVERLAY LOGIC ---
+        function openQuantum(title, initialLog) {
+            document.getElementById('quantum-title').innerText = title;
+            const overlay = document.getElementById('quantum-overlay');
+            overlay.style.right = '0';
+            const log = document.getElementById('quantum-log');
+            log.innerHTML = `<div style="color:var(--cyan); margin-bottom:10px;">> MOUNTING ${title}...</div>`;
+            if(initialLog) log.innerHTML += `<div style="color:var(--text-main);">${initialLog}</div>`;
+            
+            // Interaction: Deploy Sub-Agent
+            log.innerHTML += `<div style="color:var(--purple); margin-top:20px;">[V-SWARM] Deploying specialized observer...</div>`;
+            setTimeout(() => {
+                log.innerHTML += `<div style="color:var(--success);">[OK] Node established. Streaming real-time telemetry.</div>`;
+            }, 1000);
+        }
+
+        function closeQuantum() {
+            document.getElementById('quantum-overlay').style.right = '-400px';
+        }
+
+        async function executeQuantumCmd() {
+            const input = document.getElementById('quantum-cmd');
+            const cmd = input.value.trim();
+            if(!cmd) return;
+            input.value = '';
+            
+            const log = document.getElementById('quantum-log');
+            log.innerHTML += `<div style="color:var(--text-muted);">> EXECUTING: ${cmd}</div>`;
+            
+            // Route to Python Brain for "surprising" results
+            try {
+                const res = await fetch('/api/brain/swarm', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ task: cmd, context: "Quantum Terminal Override" })
+                });
+                const data = await res.json();
+                log.innerHTML += `<div style="color:var(--gold); margin-top:5px;">[PYTHON-BRAIN]: ${data.result}</div>`;
+            } catch(e) {
+                log.innerHTML += `<div style="color:var(--danger);">[ERROR]: Communication localized to JS engine only. Python brain unreachable.</div>`;
+            }
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Attach "Quantum Scan" to all panels
+        document.querySelectorAll('.panel').forEach(p => {
+            p.addEventListener('click', (e) => {
+                if(e.target.closest('button')) return; // Let buttons do their own thing
+                const header = p.querySelector('.panel-header').innerText;
+                openQuantum(header, `Synchronizing with ${header.split('[')[0].trim()} database. Localized cache found. 12.4GB processed.`);
+            });
+        });
+
     </script>
+    <style>
+        /* Quantum Overlay Styles */
+        #quantum-overlay {
+            position: fixed; top: 0; right: -400px; width: 400px; height: 100vh;
+            background: rgba(3, 4, 12, 0.95); border-left: 2px solid var(--cyan);
+            z-index: 2000; transition: right 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            display: flex; flex-direction: column; backdrop-filter: blur(30px);
+            box-shadow: -20px 0 50px rgba(0,0,0,0.8);
+        }
+        .quantum-header { padding: 20px; border-bottom: 1px solid rgba(0,255,255,0.2); display: flex; justify-content: space-between; align-items: center; }
+        #quantum-title { font-family: 'Orbitron'; font-size: 14px; color: var(--cyan); letter-spacing: 2px; }
+        .quantum-close { cursor: pointer; color: var(--danger); font-size: 10px; font-weight: bold; }
+        #quantum-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #quantum-log { flex: 1; padding: 20px; font-family: 'Space Mono'; font-size: 12px; overflow-y: auto; }
+        .quantum-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        #quantum-cmd { width: 100%; background: transparent; border: 1px solid var(--cyan); color: #fff; padding: 10px; font-family: 'Space Mono'; outline: none; }
+        
+        /* Add "Scan" effect overlay on click */
+        .panel::after {
+            content: ''; position: absolute; top: -100%; left: 0; width: 100%; height: 50%;
+            background: linear-gradient(0deg, transparent, rgba(0,242,255,0.15), transparent);
+            pointer-events: none; opacity: 0;
+        }
+        .panel:active::after { opacity: 1; top: 100%; transition: top 0.5s ease; }
+    </style>
+
+    <!-- --- ADVANCED UI MODULES (ANTIGRAVITY) --- -->
+
+    <!-- 1. Floating Agent Anchor -->
+    <div id="agent-anchor">
+        <div class="anchor-glow"></div>
+        <div class="anchor-icon" onclick="toggleFloatingChat()">🤖</div>
+        <div id="floating-chat-box">
+            <div class="chat-header">DOUGLAS DIRECT <span>[ENCRYPTED]</span></div>
+            <div id="floating-chat-history"></div>
+            <div class="chat-input-row">
+                <input type="text" id="floating-chat-input" placeholder="Directive..." onkeydown="if(event.key==='Enter') sendFloatingChat()">
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. "Wait, you're missing this" Alert Overlay -->
+    <div id="missing-alert-overlay">
+        <div class="alert-box">
+            <div class="alert-glitch">SYSTEM ANOMALY</div>
+            <p id="alert-message">Wait, you're missing this...</p>
+            <div class="btn-action" style="margin-top:20px" onclick="closeAlert()">ACKNOWLEDGE</div>
+        </div>
+    </div>
+
+    <style>
+        /* Floating Bar Styles */
+        #agent-anchor {
+            position: fixed; bottom: 30px; right: 30px; z-index: 1000;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .anchor-icon {
+            width: 60px; height: 60px; background: var(--panel-bg);
+            border: 2px solid var(--cyan); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; box-shadow: 0 0 20px var(--cyan);
+            position: relative; z-index: 2;
+        }
+        .anchor-glow {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%; background: var(--cyan); filter: blur(15px);
+            opacity: 0.3; animation: pulse 2s infinite;
+        }
+        #floating-chat-box {
+            position: absolute; bottom: 80px; right: 0; width: 320px;
+            background: var(--panel-bg); border: 1px solid var(--cyan);
+            border-radius: 12px; backdrop-filter: blur(20px);
+            display: none; flex-direction: column; overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        .chat-header { background: rgba(0,242,255,0.1); padding: 10px; font-size: 10px; color: var(--cyan); border-bottom: 1px solid rgba(0,242,255,0.2); letter-spacing: 2px; }
+        #floating-chat-history { height: 300px; padding: 15px; overflow-y: auto; font-size: 12px; display: flex; flex-direction: column; gap: 10px; }
+        .chat-input-row { padding: 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+        #floating-chat-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--cyan); color: #fff; padding: 8px; font-family: 'Space Mono', monospace; font-size: 11px; }
+
+        /* Secondary Dimension Theme (Matrix) */
+        body.matrix-mode {
+            --cyan: #00ff41;
+            --panel-border: rgba(0, 255, 65, 0.4);
+            --panel-glow: rgba(0, 255, 65, 0.15);
+            background-color: #000b00;
+        }
+        .matrix-mode #canvas-container { filter: sepia(1) hue-rotate(90deg) brightness(0.5) contrast(1.5); }
+        .matrix-mode .logo-main { -webkit-text-stroke: 2px var(--cyan); filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.8)); }
+
+        /* Alert Overlay */
+        #missing-alert-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.9); z-index: 10000;
+            display: none; align-items: center; justify-content: center;
+        }
+        .alert-box {
+            padding: 40px; border: 2px solid var(--danger); background: #110005;
+            box-shadow: 0 0 50px var(--danger); text-align: center;
+        }
+        .alert-glitch { font-family: 'Orbitron'; color: var(--danger); font-size: 24px; letter-spacing: 5px; animation: glitch 0.5s infinite; }
+    </style>
+
+    <script>
+        // --- SECONDARY DIMENSION TRANSITION ---
+        function triggerSecondaryDimension() {
+            const glitch = document.getElementById('glitch-transition');
+            glitch.style.display = 'block';
+            glitch.style.opacity = '1';
+            glitch.classList.add('glitch-anim');
+
+            setTimeout(() => {
+                document.body.classList.toggle('matrix-mode');
+                const statusBadge = document.querySelector('.status-badge');
+                if (document.body.classList.contains('matrix-mode')) {
+                    statusBadge.innerText = "SYSTEM STATUS: DIMENSION OVERRIDE";
+                    statusBadge.style.color = "var(--cyan)";
+                    statusBadge.style.borderColor = "var(--cyan)";
+                    checkMissingServices();
+                } else {
+                    statusBadge.innerText = "SYSTEM STATUS: OPERATIONAL";
+                    statusBadge.style.color = "var(--success)";
+                    statusBadge.style.borderColor = "var(--success)";
+                }
+            }, 300);
+
+            setTimeout(() => {
+                glitch.classList.remove('glitch-anim');
+                glitch.style.display = 'none';
+            }, 800);
+        }
+
+        // --- MISSING SERVICES ALERT ---
+        function checkMissingServices() {
+            // Check for potential missing elements or specific env-driven states
+            fetch('/api/stats/tokens').then(r => r.json()).then(data => {
+                const someMissing = Object.values(data).every(p => p.calls === 0);
+                if (someMissing) {
+                    showAlert("Wait, you're missing this... Your AI providers are configured but haven't been engaged. System potential is currently dormant.");
+                }
+            }).catch(() => {
+                showAlert("Wait, you're missing this... Communication with the core backend is severed. Antigravity requires a heartbeat connection.");
+            });
+        }
+
+        function showAlert(msg) {
+            document.getElementById('alert-message').innerText = msg;
+            document.getElementById('missing-alert-overlay').style.display = 'flex';
+        }
+
+        function closeAlert() {
+            document.getElementById('missing-alert-overlay').style.display = 'none';
+        }
+
+        // --- FLOATING CHAT ---
+        function toggleFloatingChat() {
+            const box = document.getElementById('floating-chat-box');
+            box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        async function sendFloatingChat() {
+            const input = document.getElementById('floating-chat-input');
+            const msg = input.value.trim();
+            if(!msg) return;
+            input.value = '';
+
+            const hist = document.getElementById('floating-chat-history');
+            hist.innerHTML += `<div style="color:var(--text-muted); margin-bottom:5px;">[YOU]: ${msg}</div>`;
+            
+            try {
+                const res = await fetch('/dashboard/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                hist.innerHTML += `<div style="color:var(--cyan); margin-bottom:10px;">[DOUGLAS]: ${data.response || data.error}</div>`;
+                hist.scrollTop = hist.scrollHeight;
+            } catch(e) {
+                hist.innerHTML += `<div style="color:var(--danger)">[ERR]: Connection Lost</div>`;
+            }
+        }
+
+        // Attach transition to Core
+        document.getElementById('core-container').style.pointerEvents = 'auto';
+        document.getElementById('core-container').style.cursor = 'pointer';
+        document.getElementById('core-container').onclick = triggerSecondaryDimension;
+
+        // Telemetry Feed Simulation
+        const telemetryMsgs = [
+            "[V-RESEARCH] Scanned marketplace for Node optimizations.",
+            "[V-ARCHITECT] Dimension override path stabilized.",
+            "[V-ENGINEER] Quantum cache cleared in 4ms.",
+            "[P-BRAIN] Synergy pulse detected from Python backend.",
+            "[V-OBSERVER] Ping received from Singapore Node.",
+            "[DOUGLAS] Auto-repair algorithm is idle. System stable."
+        ];
+        setInterval(() => {
+            const ticker = document.getElementById('ticker-content');
+            if(!ticker) return;
+            ticker.style.opacity = '0';
+            setTimeout(() => {
+                ticker.innerText = telemetryMsgs[Math.floor(Math.random() * telemetryMsgs.length)];
+                ticker.style.opacity = '1';
+            }, 500);
+        }, 4000);
+
+        // Panel Deep Data Mappings
+        const panelData = {
+            "ABOUT US": "Accessing core foundation logs. Neural pathways v.9.4 active. Stability: 99.8%.",
+            "GROUPS & FORUM": "Syncing with global nexus. 8 nodes pending approval. Decentralized governance online.",
+            "MARKETPLACE": "Aggregating ETH/Node swap rates. 4 high-value modules identified in the darkpool.",
+            "AFFILIATE PROGRAM": "Calibrating referral incentives. S-Tier collection currently 45% of total revenue.",
+            "MARKETING": "Aetherflow campaign live. 1.4M data points processed for outreach automation.",
+            "MONITORIZATION": "Real-time world-map telemetry verified. No anomalies detected in the Pacific cluster.",
+            "AI FILE MANAGEMENT": "Quantum database indexing complete. Redundancy at 300%.",
+            "CREATE ACCOUNT & LOGIN": "Identity vectors ready for handshake. Biometric encryption standing by."
+        };
+
+        // Enhanced Quantum Opener
+        window.openQuantum = function(title, baseMsg) {
+            const cleanTitle = title.split('[')[0].trim();
+            document.getElementById('quantum-title').innerText = cleanTitle;
+            const overlay = document.getElementById('quantum-overlay');
+            overlay.style.right = '0';
+            const log = document.getElementById('quantum-log');
+            log.innerHTML = `<div style="color:var(--cyan); margin-bottom:10px;">> MOUNTING ${cleanTitle}...</div>`;
+            log.innerHTML += `<div style="color:var(--text-main);">${panelData[cleanTitle] || baseMsg}</div>`;
+            
+            // Interaction: Deploy Sub-Agent
+            log.innerHTML += `<div style="color:var(--purple); margin-top:20px;">[V-SWARM] Deploying specialized observer to ${cleanTitle} sector...</div>`;
+            setTimeout(() => {
+                log.innerHTML += `<div style="color:var(--success);">[OK] Live telemetry established. Antigravity core is syncing.</div>`;
+            }, 800);
+        };
+
+    </script>
+    <style>
+        #telemetry-ticker {
+            position: fixed; bottom: 0; left: 0; width: 100vw; height: 25px;
+            background: rgba(0,242,255,0.05); border-top: 1px solid rgba(0,242,255,0.2);
+            z-index: 50; display: flex; align-items: center; padding: 0 20px;
+            font-family: 'Space Mono'; font-size: 9px; letter-spacing: 1px;
+        }
+        .ticker-label { color: var(--gold); border-right: 1px solid rgba(255,255,255,0.2); padding-right: 15px; margin-right: 15px; }
+        #ticker-content { color: var(--cyan); transition: opacity 0.5s; }
+    </style>
 </body>
 </html>
