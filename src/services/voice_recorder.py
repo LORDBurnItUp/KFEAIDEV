@@ -44,7 +44,7 @@ class VoiceOverlay(tk.Tk):
         self.stream = None
 
         # Setup global hotkey (runs in a separate background thread natively by keyboard package)
-        keyboard.add_hotkey('ctrl+shift+v', self.trigger_toggle)
+        keyboard.add_hotkey('shift+alt', self.trigger_toggle)
 
     def callback(self, indata, frames, time, status):
         if self.recording:
