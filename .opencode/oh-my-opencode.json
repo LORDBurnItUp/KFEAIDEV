@@ -16,7 +16,8 @@
         "external_directory": "ask"
       },
       "tools": {
-        "google_keep": true
+        "google_keep": true,
+        "voice_system": true
       }
     }
   }

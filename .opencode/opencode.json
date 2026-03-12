@@ -3,6 +3,10 @@
     "google_keep": {
       "command": "node",
       "args": ["src/services/googlekeep-server.js"]
+    },
+    "voice_system": {
+      "command": "node",
+      "args": ["src/services/voice-server.js"]
     }
   }
 }

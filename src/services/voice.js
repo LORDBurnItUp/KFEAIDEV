@@ -1,122 +1,103 @@
-/**
- * Voice Service
- * Handles Text-to-Speech (TTS) using ElevenLabs and Speech-to-Text (STT) using Deepgram
- */
-
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 const crypto = require('crypto');
 
+// Load env explicitly if needed, assuming the MCP server will load it.
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY;
-const DEFAULT_VOICE_ID = 'JBF8D9H2eM7e9mRpyTXR'; // George (British)
+
+// Using a standard, authoritative, futuristic default voice available publicly or built-in, like Adam or a custom one if available.
+const DEFAULT_VOICE_ID = "pNInz6obpgDQGcFmaJgB"; // Adam
 
 /**
- * Transcribe audio using Deepgram
- * @param {Buffer} audioBuffer - Raw audio data
- * @param {string} contentType - Optional MIME type (auto-detected if not provided)
+ * Text-to-Speech via ElevenLabs
+ * Generates an MP3 and uses VBScript to play it out loud on Windows.
  */
-async function transcribeAudio(audioBuffer, contentType) {
-  if (!DEEPGRAM_API_KEY) {
-    console.error('✗ Deepgram API key missing');
-    return null;
-  }
+async function speak(text, voiceId = DEFAULT_VOICE_ID) {
+    if (!ELEVENLABS_API_KEY) throw new Error("ELEVENLABS_API_KEY is missing in .env");
 
-  try {
-    // Deepgram auto-detects format if Content-Type is not set, but providing
-    // a valid type helps with parsing. Default to null for auto-detection.
-    const headers = {
-      'Authorization': `Token ${DEEPGRAM_API_KEY}`
-    };
+    const endpoint = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`;
     
-    // Only set Content-Type if explicitly provided to ensure compatibility
-    // with various audio formats (mp3, wav, ogg, webm, etc.)
-    if (contentType) {
-      headers['Content-Type'] = contentType;
-    }
-    
+    // Make the TTS request
     const response = await axios.post(
-      'https://api.deepgram.com/v1/listen',
-      audioBuffer,
-      {
-        headers,
-        params: {
-          smart_format: true,
-          model: 'nova-2',
-          language: 'en-US'
-        }
-      }
-    );
-
-    return response.data.results.channels[0].alternatives[0].transcript;
-  } catch (error) {
-    console.error('✗ Deepgram Error:', error.response?.data || error.message);
-    return null;
-  }
-}
-
-/**
- * Generate speech from text using ElevenLabs
- */
-async function generateSpeech(text) {
-  if (!ELEVENLABS_API_KEY) {
-    console.error('✗ ElevenLabs API key missing');
-    return null;
-  }
-
-  try {
-    const response = await axios.post(
-      `https://api.elevenlabs.io/v1/text-to-speech/${DEFAULT_VOICE_ID}`,
-      {
-        text: text,
-        model_id: 'eleven_monolingual_v1',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.5,
-        }
-      },
-      {
-        headers: {
-          'xi-api-key': ELEVENLABS_API_KEY,
-          'Content-Type': 'application/json',
-          'Accept': 'audio/mpeg'
+        endpoint,
+        {
+            text: text,
+            model_id: "eleven_turbo_v2_5",
+            voice_settings: {
+                stability: 0.5,
+                similarity_boost: 0.75
+            }
         },
-        responseType: 'arraybuffer'
-      }
+        {
+            headers: {
+                'xi-api-key': ELEVENLABS_API_KEY,
+                'Content-Type': 'application/json',
+                'Accept': 'audio/mpeg'
+            },
+            responseType: 'arraybuffer'
+        }
     );
 
-    const tempDir = path.join(process.cwd(), 'tmp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir);
+    // Save the audio file in the Listening folder
+    const listenDir = path.resolve(process.cwd(), 'Listening');
+    if (!fs.existsSync(listenDir)) fs.mkdirSync(listenDir, { recursive: true });
+    
+    const tmpPath = path.join(listenDir, `voice_msg_${crypto.randomBytes(4).toString('hex')}.mp3`);
+    fs.writeFileSync(tmpPath, response.data);
+
+    // Create a VBS script to play the audio silently via Windows Media Player
+    const vbsPath = path.join(__dirname, 'play_audio.vbs');
+    if (!fs.existsSync(vbsPath)) {
+        fs.writeFileSync(vbsPath, `
+Set Sound = CreateObject("WMPlayer.OCX.7")
+Sound.URL = WScript.Arguments(0)
+Sound.Controls.play
+WScript.Sleep 500
+Do While Sound.PlayState = 3
+  WScript.Sleep 100
+Loop
+        `.trim());
     }
 
-    const fileName = `voice_${crypto.randomUUID()}.mp3`;
-    const filePath = path.join(tempDir, fileName);
-    
-    fs.writeFileSync(filePath, Buffer.from(response.data));
-    return filePath;
-  } catch (error) {
-    console.error('✗ ElevenLabs Error:', error.response?.data?.toString() || error.message);
-    return null;
-  }
+    // Play the audio
+    return new Promise((resolve, reject) => {
+        exec(`cscript //nologo "${vbsPath}" "${tmpPath}"`, (error) => {
+            if (error) {
+                console.error("Playback error:", error);
+                // Even if playback fails, return the path so the agent knows it generated
+            }
+            resolve(tmpPath);
+        });
+    });
 }
 
 /**
- * Cleanup temporary audio files
+ * Speech-to-Text via Deepgram
+ * Transcribes audio files (from the Listening folder) into text.
  */
-function cleanupVoice(filePath) {
-  try {
-    if (filePath && fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  } catch (err) {
-    console.error('Error cleaning up voice file:', err.message);
-  }
+async function transcribe(filePath) {
+    if (!DEEPGRAM_API_KEY) throw new Error("DEEPGRAM_API_KEY is missing in .env");
+    if (!fs.existsSync(filePath)) throw new Error(`File not found: ${filePath}`);
+
+    const audioData = fs.readFileSync(filePath);
+
+    const response = await axios.post(
+        'https://api.deepgram.com/v1/listen?smart_format=true&model=nova-2&language=en-US',
+        audioData,
+        {
+            headers: {
+                'Authorization': `Token ${DEEPGRAM_API_KEY}`,
+                // We let Deepgram auto-detect mimetype
+                'Content-Type': 'audio/wav' 
+            }
+        }
+    );
+
+    const transcript = response.data?.results?.channels?.[0]?.alternatives?.[0]?.transcript || "";
+    return transcript;
 }
 
-module.exports = {
-  transcribeAudio,
-  generateSpeech,
-  cleanupVoice
-};
+module.exports = { speak, transcribe };
