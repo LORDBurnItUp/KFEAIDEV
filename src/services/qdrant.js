@@ -461,61 +461,107 @@ async function clearMemories() {
 }
 
 /**
- * Clean up old memories based on retention policy
- * Removes memories older than TTL and enforces max count limits
+ * Scroll all points from a collection, paginating until exhausted.
+ * @param {string} collectionName - Collection to scroll
+ * @returns {Promise<Array>} - All points in the collection
+ */
+async function scrollAllPoints(collectionName) {
+  const client = initClient();
+  if (!client) return [];
+
+  const allPoints = [];
+  let offset = null;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const response = await client.scroll(collectionName, {
+      limit: 100,
+      offset,
+      with_payload: true,
+      with_vector: false
+    });
+
+    allPoints.push(...response.points);
+
+    if (!response.next_page_offset) break;
+    offset = response.next_page_offset;
+  }
+
+  return allPoints;
+}
+
+/**
+ * Clean up old memories based on retention policy.
+ * Removes memories/conversations older than their TTL and enforces max count limits.
  * @returns {Promise<{deleted: number, reason: string}>}
  */
 async function cleanupMemories() {
   const client = initClient();
   if (!client) return { deleted: 0, reason: 'client not initialized' };
-  
+
   try {
     await initializeCollections();
-    
+
     const now = new Date();
-    const memoryTTL = new Date(now.getTime() - RETENTION.MEMORY_TTL_DAYS * 24 * 60 * 60 * 1000);
-    const convTTL = new Date(now.getTime() - RETENTION.CONVERSATION_TTL_DAYS * 24 * 60 * 60 * 1000);
-    
+    const memoryTTLCutoff = new Date(now.getTime() - RETENTION.MEMORY_TTL_DAYS * 24 * 60 * 60 * 1000);
+    const convTTLCutoff = new Date(now.getTime() - RETENTION.CONVERSATION_TTL_DAYS * 24 * 60 * 60 * 1000);
+
     let deleted = 0;
-    let reason = '';
-    
-    // Clean up old memories by TTL
+    const reasons = [];
+
+    // --- TTL-based deletion for memories ---
     try {
-      const oldMemories = await client.scroll(COLLECTIONS.MEMORIES, {
-        filter: {
-          must: [{
-            key: 'stored_at',
-            match: { value: null } // This won't work, need different approach
-          }]
-        },
-        limit: 100
-      });
-      
-      // For now, just log the cleanup capability
-      console.log(`📋 Memory retention policy: max ${RETENTION.MAX_MEMORIES} memories, ` +
-        `${RETENTION.MEMORY_TTL_DAYS} days TTL for memories, ` +
-        `${RETENTION.CONVERSATION_TTL_DAYS} days for conversations`);
+      const memPoints = await scrollAllPoints(COLLECTIONS.MEMORIES);
+      const expiredMemIds = memPoints
+        .filter(p => p.payload?.stored_at && new Date(p.payload.stored_at) < memoryTTLCutoff)
+        .map(p => p.id);
+
+      if (expiredMemIds.length > 0) {
+        await client.deletePoints(COLLECTIONS.MEMORIES, { points: expiredMemIds });
+        deleted += expiredMemIds.length;
+        reasons.push(`ttl_memory(${expiredMemIds.length})`);
+        console.log(`🗑️ Deleted ${expiredMemIds.length} expired memories (>${RETENTION.MEMORY_TTL_DAYS}d old)`);
+      }
     } catch (e) {
-      // Scroll may not be available, skip TTL cleanup
+      console.warn('⚠ Memory TTL cleanup failed:', e.message);
     }
-    
-    // Enforce max count limits
+
+    // --- TTL-based deletion for conversations ---
+    try {
+      const convPoints = await scrollAllPoints(COLLECTIONS.CONVERSATIONS);
+      const expiredConvIds = convPoints
+        .filter(p => p.payload?.stored_at && new Date(p.payload.stored_at) < convTTLCutoff)
+        .map(p => p.id);
+
+      if (expiredConvIds.length > 0) {
+        await client.deletePoints(COLLECTIONS.CONVERSATIONS, { points: expiredConvIds });
+        deleted += expiredConvIds.length;
+        reasons.push(`ttl_conv(${expiredConvIds.length})`);
+        console.log(`🗑️ Deleted ${expiredConvIds.length} expired conversations (>${RETENTION.CONVERSATION_TTL_DAYS}d old)`);
+      }
+    } catch (e) {
+      console.warn('⚠ Conversation TTL cleanup failed:', e.message);
+    }
+
+    // --- Enforce max count limits (warn only) ---
     const memStats = await getCollectionStats(COLLECTIONS.MEMORIES);
     const convStats = await getCollectionStats(COLLECTIONS.CONVERSATIONS);
-    
+
     if (memStats && memStats.pointsCount > RETENTION.MAX_MEMORIES) {
-      console.log(`⚠ Memory count (${memStats.pointsCount}) exceeds limit (${RETENTION.MAX_MEMORIES}) - consider running cleanup`);
-      reason = `count_exceeded`;
+      console.log(`⚠ Memory count (${memStats.pointsCount}) still exceeds limit (${RETENTION.MAX_MEMORIES}) after TTL cleanup`);
+      reasons.push('mem_count_exceeded');
     }
-    
+
     if (convStats && convStats.pointsCount > RETENTION.MAX_CONVERSATIONS) {
-      console.log(`⚠ Conversation count (${convStats.pointsCount}) exceeds limit (${RETENTION.MAX_CONVERSATIONS}) - consider running cleanup`);
-      reason = reason ? 'both_exceeded' : 'count_exceeded';
+      console.log(`⚠ Conversation count (${convStats.pointsCount}) still exceeds limit (${RETENTION.MAX_CONVERSATIONS}) after TTL cleanup`);
+      reasons.push('conv_count_exceeded');
     }
-    
-    return { deleted, reason: reason || 'policy_active' };
+
+    const reason = reasons.length > 0 ? reasons.join(',') : 'policy_active';
+    console.log(`📋 Cleanup complete: ${deleted} points deleted`);
+    return { deleted, reason };
   } catch (error) {
-    console.error('✗ Cleanup check failed:', error.message);
+    console.error('✗ Cleanup failed:', error.message);
     return { deleted: 0, reason: error.message };
   }
 }
