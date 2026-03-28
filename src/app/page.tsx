@@ -35,6 +35,10 @@ const WormholeEntry = dynamic(() => import('@/components/WormholeEntry'), {
   ssr: false,
 });
 
+const AmbientSound = dynamic(() => import('@/components/AmbientSound'), {
+  ssr: false,
+});
+
 const features = [
   {
     icon: '◈',
@@ -116,6 +120,9 @@ export default function Home() {
 
       {/* ==================== WORMHOLE ENTRY (5 phases: Space → Wormhole → Atmosphere → Freefall → Landing) ==================== */}
       <WormholeEntry />
+
+      {/* Ambient Sound — relaxing space atmosphere */}
+      <AmbientSound />
 
       {/* ==================== LORE SECTION ==================== */}
       <section className="relative z-10 py-32 px-4">
