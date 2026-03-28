@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic';
 import GlitchText from '@/components/GlitchText';
 import ScrollReveal from '@/components/ScrollReveal';
 import TeleportNav from '@/components/TeleportNav';
+import BreathingText from '@/components/BreathingText';
+import LightningText from '@/components/LightningText';
 
 const HeroScene = dynamic(() => import('@/components/HeroScene'), {
   ssr: false,
@@ -25,42 +27,52 @@ const ParallaxScene = dynamic(() => import('@/components/ParallaxScene'), {
   ssr: false,
 });
 
+const AsteroidField = dynamic(() => import('@/components/AsteroidField'), {
+  ssr: false,
+});
+
 const features = [
   {
     icon: '◈',
     title: 'AI Community Hub',
     description: 'Connect with developers, CEOs, and engineers from another dimension. Live video chat with 10 simultaneous cameras.',
     color: 'lime',
+    orbitColor: '#BFF549',
   },
   {
     icon: '◇',
     title: 'Digital Marketplace',
     description: 'Sell automation, websites, apps, games, videos — anything. Your skills, your price, your empire.',
     color: 'blue-accent',
+    orbitColor: '#60a5fa',
   },
   {
     icon: '⬡',
     title: 'Command Center',
     description: 'Your holographic dashboard. Integrate APIs, deploy apps, track analytics. All from one cosmic interface.',
     color: 'yellow-accent',
+    orbitColor: '#FACC15',
   },
   {
     icon: '▸',
     title: 'Built-in Terminal',
     description: 'Real CLI connected to your machine. Teleport commands to navigate the platform at lightspeed.',
     color: 'lime',
+    orbitColor: '#BFF549',
   },
   {
     icon: '◉',
     title: 'Affiliate Network',
     description: 'Earn by referring. Multiple affiliate programs built in. Passive income from the future.',
     color: 'blue-accent',
+    orbitColor: '#60a5fa',
   },
   {
     icon: '◎',
     title: '4D Experience',
     description: 'Blackhole transitions. Floating UI. Particle fields. A website that feels alive. From 2130.',
     color: 'yellow-accent',
+    orbitColor: '#FACC15',
   },
 ];
 
@@ -73,6 +85,14 @@ const colorMap: Record<string, string> = {
 export default function Home() {
   return (
     <main className="relative min-h-screen">
+      {/* 3D Icon Spin Animation */}
+      <style jsx global>{`
+        @keyframes spin3dIcon {
+          0% { transform: rotateY(0deg); }
+          100% { transform: rotateY(360deg); }
+        }
+      `}</style>
+
       {/* Navigation */}
       <TeleportNav />
 
@@ -81,6 +101,7 @@ export default function Home() {
       <CyberGrid />
       <StarField />
       <ParallaxScene />
+      <AsteroidField />
 
       {/* Background Effects */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -203,6 +224,11 @@ export default function Home() {
                     className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-2xl mb-6 transition-all duration-300 group-hover:scale-110 ${
                       colorMap[feature.color]
                     }`}
+                    style={{
+                      animation: 'spin3dIcon 8s linear infinite',
+                      transformStyle: 'preserve-3d',
+                      filter: `drop-shadow(0 0 10px ${feature.orbitColor}40)`,
+                    }}
                   >
                     {feature.icon}
                   </div>
