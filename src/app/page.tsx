@@ -17,6 +17,14 @@ const CyberGrid = dynamic(() => import('@/components/CyberGrid'), {
   ssr: false,
 });
 
+const StarField = dynamic(() => import('@/components/StarField'), {
+  ssr: false,
+});
+
+const ParallaxScene = dynamic(() => import('@/components/ParallaxScene'), {
+  ssr: false,
+});
+
 const features = [
   {
     icon: '◈',
@@ -71,6 +79,8 @@ export default function Home() {
       {/* Visual Effects */}
       <ScanlineOverlay />
       <CyberGrid />
+      <StarField />
+      <ParallaxScene />
 
       {/* Background Effects */}
       <div className="fixed inset-0 z-0 pointer-events-none">
