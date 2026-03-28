@@ -9,6 +9,10 @@
   --void: #02040a;
   --blue-accent: #60a5fa;
   --yellow-accent: #FACC15;
+  --duration-fast: 150ms;
+  --duration: 200ms;
+  --duration-slow: 350ms;
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
