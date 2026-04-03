@@ -97,7 +97,7 @@ function KDSLetters({ mat }: { mat: THREE.Material }) {
   return (
     <group ref={group} position={[0, 0, 0]}>
       {/* ─── K ─── */}
-      <group ref={(el) => (letters.current[0] = el)} position={[-1.5 * (1 + (currentScroll / Math.max(maxScroll, 1))) * 0.3, 0, 0]}>
+      <group ref={(e) => { letters.current[0] = e }} position={[-1.5 * (1 + (currentScroll / Math.max(maxScroll, 1))) * 0.3, 0, 0]}>
         <mesh material={mat}><boxGeometry args={[0.12, 0.9, 0.15]} /></mesh>
         <mesh material={mat} rotation={[0, 0, -0.55]} position={[0.22, 0.28, 0]}><boxGeometry args={[0.45, 0.1, 0.1]} /></mesh>
         <mesh material={mat} rotation={[0, 0, 0.55]} position={[0.22, -0.28, 0]}><boxGeometry args={[0.45, 0.1, 0.1]} /></mesh>
