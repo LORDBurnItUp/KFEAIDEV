@@ -11,6 +11,14 @@ const HeroScene = dynamic(() => import('@/components/HeroScene'), {
   ssr: false,
 });
 
+const LrysDripBackground = dynamic(() => import('@/components/LrysDripBackground'), {
+  ssr: false,
+});
+
+const KDSScrollyVideo = dynamic(() => import('@/components/KDSScrollyVideo'), {
+  ssr: false,
+});
+
 const ScanlineOverlay = dynamic(() => import('@/components/ScanlineOverlay'), {
   ssr: false,
 });
@@ -93,6 +101,12 @@ const colorMap: Record<string, string> = {
 export default function Home() {
   return (
     <main className="relative min-h-screen">
+      {/* LRYS Drip Background — cinematic text + gold dripping effect */}
+      <LrysDripBackground />
+
+      {/* Scrollytelling Video Intro — scroll-linked cinematic intro */}
+      <KDSScrollyVideo />
+
       {/* 3D Icon Spin Animation */}
       <style jsx global>{`
         @keyframes spin3dIcon {

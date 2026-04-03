@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KDS — Kings Dripping Swag (2130)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Space Grotesk', sans-serif; background: #02040a; color: #fff; }
+    
+    /* Scroll container */
+    .scroll-container { height: 600vh; }
+    
+    /* Sticky viewport */
+    .sticky-viewport {
+      position: sticky; top: 0; height: 100vh; overflow: hidden;
+    }
+    
+    /* Video sections */
+    .video-section {
+      position: absolute; inset: 0;
+      opacity: 0; transition: opacity 1s ease;
+    }
+    .video-section.active { opacity: 1; z-index: 1; }
+    
+    .video-bg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; opacity: 0.35;
+    }
+    
+    .video-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.3), rgba(0,0,0,0.8));
+    }
+    
+    .video-content {
+      position: absolute; inset: 0;
+      display: flex; align-items: center;
+      padding: 0 8%;
+    }
+    .video-content.center { justify-content: center; text-align: center; }
+    .video-content.left { justify-content: flex-start; }
+    .video-content.right { justify-content: flex-end; text-align: right; }
+    
+    .section-num {
+      color: rgba(191,245,73,0.4); font-size: 0.75rem;
+      font-family: monospace; letter-spacing: 0.3em; margin-bottom: 1rem;
+    }
+    
+    .section-title {
+      font-size: clamp(3rem, 10vw, 8rem); font-weight: 900;
+      line-height: 0.9; letter-spacing: -0.03em;
+    }
+    .section-title span {
+      display: inline-block;
+      opacity: 0; transform: translateY(20px);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .video-section.active .section-title span {
+      opacity: 1; transform: translateY(0);
+    }
+    
+    .section-subtitle {
+      color: #99A1AF; font-size: 1.25rem; margin-top: 1rem;
+      opacity: 0; transition: opacity 0.8s ease 1s;
+    }
+    .video-section.active .section-subtitle { opacity: 1; }
+    
+    .section-line {
+      width: 100px; height: 2px; background: #BFF549;
+      margin-top: 1.5rem; transform: scaleX(0); transform-origin: left;
+      transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1) 1.2s;
+    }
+    .video-section.active .section-line { transform: scaleX(1); }
+    
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute; bottom: 2rem; left: 50%;
+      transform: translateX(-50%); z-index: 10;
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      transition: opacity 0.5s ease;
+    }
+    .scroll-text { color: #5a5a6e; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; }
+    .scroll-mouse {
+      width: 24px; height: 40px; border: 2px solid #5a5a6e;
+      border-radius: 12px; display: flex; justify-content: center; padding-top: 8px;
+    }
+    .scroll-dot {
+      width: 6px; height: 12px; background: #BFF549; border-radius: 3px;
+      animation: scrollBounce 2s infinite;
+    }
+    
+    @keyframes scrollBounce {
+      0%, 100% { transform: translateY(0); opacity: 1; }
+      50% { transform: translateY(8px); opacity: 0.3; }
+    }
+    
+    /* Progress dots */
+    .progress-dots {
+      position: absolute; right: 1.5rem; top: 50%;
+      transform: translateY(-50%); z-index: 10;
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); cursor: pointer;
+      transition: all 0.3s;
+    }
+    .dot.active { background: #BFF549; transform: scale(1.5); }
+    
+    /* Progress bar */
+    .progress-bar {
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px; background: rgba(255,255,255,0.05); z-index: 20;
+    }
+    .progress-fill {
+      height: 100%; background: #BFF549; width: 0;
+      transition: width 0.1s linear;
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-container" id="scrollContainer">
+    <div class="sticky-viewport">
+      <!-- Section 1 -->
+      <div class="video-section active" data-section="0">
+        <video class="video-bg" src="kds-clip-1.mp4" loop muted playsinline autoplay></video>
+        <div class="video-overlay"></div>
+        <div class="video-content center">
+          <div>
+            <div class="section-num">01 / 06</div>
+            <h1 class="section-title">
+              <span style="transition-delay:0.3s">K</span><span style="transition-delay:0.33s">I</span><span style="transition-delay:0.36s">N</span><span style="transition-delay:0.39s">G</span><span style="transition-delay:0.42s">S</span><span style="transition-delay:0.48s"> </span><span style="transition-delay:0.51s">D</span><span style="transition-delay:0.54s">R</span><span style="transition-delay:0.57s">I</span><span style="transition-delay:0.6s">P</span><span style="transition-delay:0.63s">P</span><span style="transition-delay:0.66s">I</span><span style="transition-delay:0.69s">N</span><span style="transition-delay:0.72s">G</span>
+            </h1>
+            <p class="section-subtitle">Welcome to 2130</p>
+            <div class="section-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2 -->
+      <div class="video-section" data-section="1">
+        <video class="video-bg" src="kds-clip-3.mp4" loop muted playsinline></video>
+        <div class="video-overlay"></div>
+        <div class="video-content left">
+          <div>
+            <div class="section-num">02 / 06</div>
+            <h2 class="section-title">
+              <span style="transition-delay:0.3s">A</span><span style="transition-delay:0.33s">I</span><span style="transition-delay:0.39s"> </span><span style="transition-delay:0.42s">D</span><span style="transition-delay:0.45s">E</span><span style="transition-delay:0.48s">V</span>
+            </h2>
+            <p class="section-subtitle">Building the future</p>
+            <div class="section-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3 -->
+      <div class="video-section" data-section="2">
+        <video class="video-bg" src="kds-clip-5.mp4" loop muted playsinline></video>
+        <div class="video-overlay"></div>
+        <div class="video-content right">
+          <div>
+            <div class="section-num">03 / 06</div>
+            <h2 class="section-title">
+              <span style="transition-delay:0.3s">3</span><span style="transition-delay:0.33s">D</span><span style="transition-delay:0.39s"> </span><span style="transition-delay:0.42s">W</span><span style="transition-delay:0.45s">O</span><span style="transition-delay:0.48s">R</span><span style="transition-delay:0.51s">L</span><span style="transition-delay:0.54s">D</span>
+            </h2>
+            <p class="section-subtitle">Beyond reality</p>
+            <div class="section-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4 -->
+      <div class="video-section" data-section="3">
+        <video class="video-bg" src="kds-clip-8.mp4" loop muted playsinline></video>
+        <div class="video-overlay"></div>
+        <div class="video-content center">
+          <div>
+            <div class="section-num">04 / 06</div>
+            <h2 class="section-title">
+              <span style="transition-delay:0.3s">V</span><span style="transition-delay:0.33s">O</span><span style="transition-delay:0.36s">I</span><span style="transition-delay:0.39s">C</span><span style="transition-delay:0.42s">E</span>
+            </h2>
+            <p class="section-subtitle">AI that speaks</p>
+            <div class="section-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5 -->
+      <div class="video-section" data-section="4">
+        <video class="video-bg" src="kds-clip-11.mp4" loop muted playsinline></video>
+        <div class="video-overlay"></div>
+        <div class="video-content left">
+          <div>
+            <div class="section-num">05 / 06</div>
+            <h2 class="section-title">
+              <span style="transition-delay:0.3s">C</span><span style="transition-delay:0.33s">O</span><span style="transition-delay:0.36s">D</span><span style="transition-delay:0.39s">E</span>
+            </h2>
+            <p class="section-subtitle">Build the future</p>
+            <div class="section-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 6 -->
+      <div class="video-section" data-section="5">
+        <video class="video-bg" src="kds-clip-18.mp4" loop muted playsinline></video>
+        <div class="video-overlay"></div>
+        <div class="video-content center">
+          <div>
+            <div class="section-num">06 / 06</div>
+            <h2 class="section-title">
+              <span style="transition-delay:0.3s">2</span><span style="transition-delay:0.33s">1</span><span style="transition-delay:0.36s">3</span><span style="transition-delay:0.39s">0</span>
+            </h2>
+            <p class="section-subtitle">The future is now</p>
+            <div class="section-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scroll indicator -->
+      <div class="scroll-indicator" id="scrollIndicator">
+        <span class="scroll-text">Scroll to explore</span>
+        <div class="scroll-mouse"><div class="scroll-dot"></div></div>
+      </div>
+
+      <!-- Progress dots -->
+      <div class="progress-dots">
+        <div class="dot active" data-index="0"></div>
+        <div class="dot" data-index="1"></div>
+        <div class="dot" data-index="2"></div>
+        <div class="dot" data-index="3"></div>
+        <div class="dot" data-index="4"></div>
+        <div class="dot" data-index="5"></div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+  </div>
+
+  <script>
+    const sections = document.querySelectorAll('.video-section');
+    const videos = document.querySelectorAll('.video-bg');
+    const dots = document.querySelectorAll('.dot');
+    const progressFill = document.getElementById('progressFill');
+    const scrollIndicator = document.getElementById('scrollIndicator');
+    const container = document.getElementById('scrollContainer');
+
+    let activeIndex = 0;
+
+    function updateSections() {
+      const scrollTop = window.scrollY;
+      const totalHeight = container.scrollHeight - window.innerHeight;
+      const progress = Math.min(1, scrollTop / totalHeight);
+      
+      // Update progress bar
+      progressFill.style.width = `${progress * 100}%`;
+      
+      // Determine active section
+      const newIndex = Math.min(sections.length - 1, Math.floor(progress * sections.length));
+      
+      if (newIndex !== activeIndex) {
+        // Deactivate old
+        sections[activeIndex].classList.remove('active');
+        videos[activeIndex].pause();
+        dots[activeIndex].classList.remove('active');
+        
+        // Activate new
+        activeIndex = newIndex;
+        sections[activeIndex].classList.add('active');
+        videos[activeIndex].play().catch(() => {});
+        dots[activeIndex].classList.add('active');
+      }
+      
+      // Hide scroll indicator after first section
+      scrollIndicator.style.opacity = progress < 0.1 ? '1' : '0';
+    }
+
+    // Dot click navigation
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', () => {
+        const scrollTo = (index / sections.length) * (container.scrollHeight - window.innerHeight);
+        window.scrollTo({ top: scrollTo, behavior: 'smooth' });
+      });
+    });
+
+    window.addEventListener('scroll', updateSections, { passive: true });
+    
+    // Initial state
+    sections[0].classList.add('active');
+    videos[0].play().catch(() => {});
+  </script>
+</body>
+</html>

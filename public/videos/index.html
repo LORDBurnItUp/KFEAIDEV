@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KDS Video Knowledge Base</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Space Grotesk', sans-serif; background: #02040a; color: #fff; min-height: 100vh; }
+    
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    
+    h1 { font-size: 3rem; font-weight: 800; text-align: center; margin-bottom: 0.5rem; }
+    h1 span { color: #BFF549; }
+    .subtitle { text-align: center; color: #99A1AF; margin-bottom: 3rem; }
+    
+    .video-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.5);
+    }
+    
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    
+    .overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 2rem;
+      background: linear-gradient(transparent, rgba(0,0,0,0.9));
+    }
+    
+    .video-title { font-size: 1.5rem; font-weight: 700; }
+    .video-desc { color: #99A1AF; font-size: 0.9rem; margin-top: 0.25rem; }
+    
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      z-index: 10;
+    }
+    .nav-btn:hover { background: rgba(191,245,73,0.2); border-color: rgba(191,245,73,0.3); }
+    .nav-prev { left: 1rem; }
+    .nav-next { right: 1rem; }
+    
+    .playlist {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+    
+    .playlist-item {
+      padding: 0.75rem 0.5rem;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.3s;
+      color: #5a5a6e;
+    }
+    .playlist-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .playlist-item.active {
+      background: rgba(191,245,73,0.1);
+      border-color: rgba(191,245,73,0.2);
+      color: #BFF549;
+    }
+    
+    .playlist-title { font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .playlist-num { font-size: 0.6rem; color: inherit; opacity: 0.6; margin-top: 0.25rem; }
+    
+    .counter { text-align: center; color: #5a5a6e; margin-top: 1rem; font-size: 0.85rem; }
+    
+    @media (max-width: 768px) {
+      .playlist { grid-template-columns: repeat(4, 1fr); }
+      h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>KDS <span>Video</span> Knowledge Base</h1>
+    <p class="subtitle">14 clips • The future in motion • From 2130</p>
+    
+    <div class="video-container">
+      <video id="player" controls>
+        <source src="kds-clip-1.mp4" type="video/mp4">
+      </video>
+      
+      <div class="overlay">
+        <div class="video-title" id="videoTitle">KDS Introduction</div>
+        <div class="video-desc" id="videoDesc">Welcome to the future</div>
+      </div>
+      
+      <button class="nav-btn nav-prev" onclick="prevVideo()">◀</button>
+      <button class="nav-btn nav-next" onclick="nextVideo()">▶</button>
+    </div>
+    
+    <div class="playlist" id="playlist"></div>
+    <div class="counter" id="counter">Video 1 of 14</div>
+  </div>
+
+  <script>
+    const videos = [
+      { src: 'kds-clip-1.mp4', title: 'KDS Introduction', desc: 'Welcome to the future' },
+      { src: 'kds-clip-2.mp4', title: 'The Vision', desc: 'Building from 2130' },
+      { src: 'kds-clip-3.mp4', title: 'AI Development', desc: 'Creating intelligence' },
+      { src: 'kds-clip-4.mp4', title: 'Community Hub', desc: 'Where minds connect' },
+      { src: 'kds-clip-5.mp4', title: '3D Experience', desc: 'Beyond reality' },
+      { src: 'kds-clip-6.mp4', title: 'The Marketplace', desc: 'Digital commerce' },
+      { src: 'kds-clip-7.mp4', title: 'Command Center', desc: 'Total control' },
+      { src: 'kds-clip-8.mp4', title: 'Voice Agents', desc: 'AI that speaks' },
+      { src: 'kds-clip-9.mp4', title: 'Call Center Army', desc: 'Automated sales' },
+      { src: 'kds-clip-10.mp4', title: 'The Network', desc: 'Global connections' },
+      { src: 'kds-clip-11.mp4', title: 'Code & Create', desc: 'Build the future' },
+      { src: 'kds-clip-12.mp4', title: 'Data Flow', desc: 'Information streams' },
+      { src: 'kds-clip-13.mp4', title: 'The Platform', desc: 'Everything unified' },
+      { src: 'kds-clip-14.mp4', title: 'Beyond 2130', desc: 'The next chapter' },
+      { src: 'kds-clip-15.mp4', title: 'The Engine', desc: 'Core technology' },
+      { src: 'kds-clip-16.mp4', title: 'Live Demo', desc: 'See it in action' },
+      { src: 'kds-clip-17.mp4', title: 'Integration', desc: 'Everything connected' },
+      { src: 'kds-clip-18.mp4', title: 'The Future', desc: 'What comes next' },
+    ];
+
+    let currentIndex = 0;
+    const player = document.getElementById('player');
+    const title = document.getElementById('videoTitle');
+    const desc = document.getElementById('videoDesc');
+    const counter = document.getElementById('counter');
+    const playlist = document.getElementById('playlist');
+
+    // Build playlist
+    videos.forEach((v, i) => {
+      const item = document.createElement('div');
+      item.className = 'playlist-item' + (i === 0 ? ' active' : '');
+      item.innerHTML = `<div class="playlist-title">${v.title}</div><div class="playlist-num">${i+1}/${videos.length}</div>`;
+      item.onclick = () => loadVideo(i);
+      playlist.appendChild(item);
+    });
+
+    function loadVideo(index) {
+      currentIndex = index;
+      player.src = videos[index].src;
+      player.play();
+      title.textContent = videos[index].title;
+      desc.textContent = videos[index].desc;
+      counter.textContent = `Video ${index+1} of ${videos.length}`;
+      
+      document.querySelectorAll('.playlist-item').forEach((item, i) => {
+        item.className = 'playlist-item' + (i === index ? ' active' : '');
+      });
+    }
+
+    function nextVideo() { loadVideo((currentIndex + 1) % videos.length); }
+    function prevVideo() { loadVideo((currentIndex - 1 + videos.length) % videos.length); }
+    
+    player.onended = nextVideo;
+  </script>
+</body>
+</html>
