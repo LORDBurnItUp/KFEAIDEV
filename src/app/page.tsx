@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import ScrollReveal from '@/components/ScrollReveal';
 import TeleportNav from '@/components/TeleportNav';
 
-const InteractiveHero = dynamic(() => import('@/components/InteractiveHero'), { ssr: false });
+const ThreeHero = dynamic(() => import('@/components/ThreeHero'), { ssr: false });
 const ScanlineOverlay = dynamic(() => import('@/components/ScanlineOverlay'), { ssr: false });
 const AmbientSound = dynamic(() => import('@/components/AmbientSound'), { ssr: false });
 
@@ -49,7 +49,7 @@ export default function Home() {
           pointerEvents: heroOpacity > 0.1 ? 'auto' : 'none',
         }}
       >
-        <InteractiveHero />
+        <ThreeHero />
       </div>
 
       {/* ─── SCANLINE OVERLAY ─── */}
