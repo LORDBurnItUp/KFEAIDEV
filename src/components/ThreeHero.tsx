@@ -143,7 +143,7 @@ function KDSLogo() {
         
         // Wireframe overlay
         const wire = new THREE.Mesh(
-          new THREE.WireframeGeometry(geom, 4),
+          new THREE.WireframeGeometry(geom),
           new THREE.LineBasicMaterial({ color: '#BFF549', transparent: true, opacity: 0.06 })
         );
         group.add(wire);
