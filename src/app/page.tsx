@@ -5,8 +5,6 @@ import dynamic from 'next/dynamic';
 const VexelHero = dynamic(() => import('@/components/VexelHero'), { ssr: false });
 const AmbientSound = dynamic(() => import('@/components/AmbientSound'), { ssr: false });
 
-const VexelHero = dynamic(() => import('@/components/VexelHero'), { ssr: false });
-const AmbientSound = dynamic(() => import('@/components/AmbientSound'), { ssr: false });
 
 // ═══════════════════════════════════════════
 // 🎨 VEXEL x KDS — IMMERSIVE SCROLL

@@ -96,11 +96,7 @@ function ParticleConstellation({ count = 150 }: { count?: number }) {
           lineColors[idx+3] = c.r * opacity; lineColors[idx+4] = c.g * opacity; lineColors[idx+5] = c.b * opacity;
 
           lineIdx++;
-          if (lineIdx > 2000) break; // Performance cap
-        }
-      }
-      if (lineIdx > 2000) break;
-    });
+        });
 
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
     linesRef.current.geometry.setDrawRange(0, lineIdx * 2);
