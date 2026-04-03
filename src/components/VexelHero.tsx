@@ -40,8 +40,9 @@ function ParticleConstellation({ count = 150 }: { count?: number }) {
     return pos;
   }, [count]);
 
-  const linePositions = useMemo(() => new Float32Array(count * count * 6), [count]);
-  const lineColors = useMemo(() => new Float32Array(count * count * 6), [count]);
+  const MAX_LINES = 1200;
+  const linePositions = useMemo(() => new Float32Array(MAX_LINES * 6), []);
+  const lineColors = useMemo(() => new Float32Array(MAX_LINES * 6), []);
 
   useFrame(() => {
     if (!pointsRef.current || !linesRef.current) return;
@@ -54,7 +55,9 @@ function ParticleConstellation({ count = 150 }: { count?: number }) {
     const lime = new THREE.Color('#BFF549');
     const blue = new THREE.Color('#60A5FA');
 
-    particleData.current.forEach((p, i) => {
+    for (let i = 0; i < particleData.current.length && lineIdx < MAX_LINES; i++) {
+      const p = particleData.current[i];
+
       // Mouse attraction (gentle)
       const dx = mouseSmooth.x * 6 - p.pos.x;
       const dy = mouseSmooth.y * 4 - p.pos.y;
@@ -82,7 +85,7 @@ function ParticleConstellation({ count = 150 }: { count?: number }) {
       posArr[i*3+2] = p.pos.z;
 
       // Find connections
-      for (let j = i + 1; j < particleData.current.length; j++) {
+      for (let j = i + 1; j < particleData.current.length && lineIdx < MAX_LINES; j++) {
         const q = particleData.current[j];
         const dist = p.pos.distanceTo(q.pos);
         if (dist < connectionDist) {
@@ -96,7 +99,9 @@ function ParticleConstellation({ count = 150 }: { count?: number }) {
           lineColors[idx+3] = c.r * opacity; lineColors[idx+4] = c.g * opacity; lineColors[idx+5] = c.b * opacity;
 
           lineIdx++;
-        });
+        }
+      }
+    }
 
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
     linesRef.current.geometry.setDrawRange(0, lineIdx * 2);
@@ -176,10 +181,10 @@ function ScrollCamera() {
   const smoothLook = useRef(new THREE.Vector3(0, 0, 0));
 
   useFrame(() => {
-    const t = scrollProgress;
     mouseSmooth.lerp(mouseTarget, 0.06);
+    const t = scrollProgress;
 
-    // Camera path: descends and rotates as you scroll
+    // Camera path: descends and shifts as you scroll deeper
     const targetX = Math.sin(t * Math.PI * 0.5) * 2 + mouseSmooth.x * 0.4;
     const targetY = Math.cos(t * Math.PI * 0.3) * 0.5 - t * 1.5 + mouseSmooth.y * 0.3;
     const targetZ = 6 + t * 2;
