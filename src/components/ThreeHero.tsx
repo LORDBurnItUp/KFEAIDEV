@@ -1,408 +1,414 @@
 'use client';
 
 import { useRef, useMemo, useEffect, useState, useCallback } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, Text, MeshPhysicalMaterial, MeshTransmissionMaterial, MeshDistortMaterial, Environment } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// Shared mouse state
+// ═══════════════════════════════════════════
+// SHARED STATE
+// ═══════════════════════════════════════════
 const mouseTarget = new THREE.Vector2(0, 0);
 const mouseSmooth = new THREE.Vector2(0, 0);
+let globalScroll = 0;
+let globalMaxScroll = 1;
 
 // ═══════════════════════════════════════════
-// 💎 CFENTER-STYLE 3D KDS HERO
-// Dark void studio, floating metallic text,
-// dramatic rim lighting, glass/shard particles,
-// cinematic slow rotation, mouse tracking
+// 🎥 PARALLAX CAMERA — responds to scroll + mouse
+//
+// Scroll = camera flies through the KDS universe
+// Mouse = subtle camera tilt on top
+// The scene is a 3D tunnel — you're descending through it
 // ═══════════════════════════════════════════
-
-// ─── Floating geometric shards ───
-function FloatingShards() {
-  const shards = useRef<Array<{
-    mesh: THREE.Mesh;
-    rotSpeed: THREE.Vector3;
-    floatSpeed: number;
-    floatAmp: number;
-    orbitRadius: number;
-    orbitSpeed: number;
-    orbitPhase: number;
-  }>>([]);
-
-  const geometries = useMemo(() => [
-    new THREE.IcosahedronGeometry(1, 0),
-    new THREE.OctahedronGeometry(1, 0),
-    new THREE.TetrahedronGeometry(1, 0),
-    new THREE.BoxGeometry(1, 1, 0.15),
-    new THREE.ConeGeometry(0.7, 1.2, 4),
-  ], []);
-
-  const materials = useMemo(() => [
-    // Chrome/gold metallic
-    new THREE.MeshPhysicalMaterial({
-      color: '#d4af37', metalness: 1.0, roughness: 0.15,
-      envMapIntensity: 2.0, clearcoat: 1, clearcoatRoughness: 0.1,
-    }),
-    // Glass/lime
-    new THREE.MeshPhysicalMaterial({
-      color: '#BFF549', metalness: 0.3, roughness: 0.0,
-      transparent: true, opacity: 0.3, transmission: 0.9,
-      envMapIntensity: 1.0, ior: 1.5, thickness: 0.5,
-    }),
-    // Dark chrome
-    new THREE.MeshPhysicalMaterial({
-      color: '#888888', metalness: 1.0, roughness: 0.8,
-      envMapIntensity: 1.5,
-    }),
-    // Gold accent
-    new THREE.MeshPhysicalMaterial({
-      color: '#FACC15', metalness: 0.9, roughness: 0.2,
-      emissive: '#FACC15', emissiveIntensity: 0.05,
-      envMapIntensity: 2.0,
-    }),
-  ], []);
-
-  const shardData = useMemo(() =>
-    Array.from({ length: 18 }, (_, i) => ({
-      geometry: geometries[i % geometries.length],
-      material: materials[i % materials.length],
-      scale: 0.15 + Math.random() * 0.35,
-      orbitRadius: 3 + Math.random() * 3,
-      orbitSpeed: 0.1 + Math.random() * 0.3,
-      orbitHeight: (Math.random() - 0.5) * 4,
-      orbitPhase: Math.random() * Math.PI * 2,
-    })), [geometries, materials]);
+function ParallaxCamera() {
+  const { camera } = useThree();
+  const smoothPos = useRef(new THREE.Vector3(0, 0, 6));
+  const smoothLookAt = useRef(new THREE.Vector3(0, 0, 0));
+  const targetLookAt = useRef(new THREE.Vector3(0, 0, 0));
 
   useFrame((state, delta) => {
-    const t = state.clock.elapsedTime;
-    shards.current.forEach((shard, i) => {
-      if (!shard) return;
-      shard.mesh.rotation.x += shard.rotSpeed.x * delta;
-      shard.mesh.rotation.y += shard.rotSpeed.y * delta;
-      shard.mesh.position.y = shardData[i].orbitHeight + Math.sin(t * shard.floatSpeed) * shard.floatAmp;
-      shard.mesh.position.x = Math.cos(t * shardData[i].orbitSpeed + shardData[i].orbitPhase) * shardData[i].orbitRadius;
-      shard.mesh.position.z = Math.sin(t * shardData[i].orbitSpeed + shardData[i].orbitPhase) * shardData[i].orbitRadius;
-    });
+    // Smooth mouse
+    mouseSmooth.lerp(mouseTarget, 0.06);
+    const m = mouseSmooth;
+
+    // Normalized scroll progress (0 at top, 1 at bottom)
+    const t = globalScroll / Math.max(globalMaxScroll, 1);
+
+    // ─── Camera path through the KDS universe ───
+    // Phase 1 (0-15%): Hovering above, looking at logo straight-on
+    // Phase 2 (15-40%): Diving in — camera descends + rotates
+    // Phase 3 (40-65%): Flying past the logo, seeing it from the side
+    // Phase 4 (65-85%): Behind the logo, looking back
+    // Phase 5 (85-100%): Rising up, logo recedes into distance
+
+    let cx: number, cy: number, cz: number;
+
+    if (t < 0.15) {
+      // Hovering — straight on, slight mouse influence
+      const lt = t / 0.15;
+      cx = m.x * 0.3;
+      cy = 0.3 + lt * 0.2 + m.y * 0.2;
+      cz = 6 - lt * 0.5;
+    } else if (t < 0.40) {
+      // Diving in — slow descent, slight rotation
+      const lt = (t - 0.15) / 0.25;
+      cx = m.x * 0.3 + lt * 1.5;
+      cy = 0.5 - lt * 0.8 + m.y * 0.3;
+      cz = 5.5 - lt * 2.0;
+    } else if (t < 0.65) {
+      // Side fly-by — camera pans right, looks back at logo
+      const lt = (t - 0.40) / 0.25;
+      cx = 1.5 + lt * 2.5 + m.x * 0.2;
+      cy = -0.3 + lt * 0.5 + m.y * 0.2;
+      cz = 3.5 - lt * 1.5;
+    } else if (t < 0.85) {
+      // Behind the logo — looking from afar
+      const lt = (t - 0.65) / 0.20;
+      cx = 4.0 - lt * 1.5 + m.x * 0.15;
+      cy = 0.2 + lt * 1.5 + m.y * 0.15;
+      cz = 2.0 - lt * 1.0;
+    } else {
+      // Rising out — looking back at fading logo
+      const lt = (t - 0.85) / 0.15;
+      cx = 2.5 - lt * 2.5 + m.x * 0.1;
+      cy = 1.7 + lt * 2.0 + m.y * 0.1;
+      cz = 1.0 + lt * 2.0;
+    }
+
+    // Smooth interpolation
+    smoothPos.current.x += (cx - smoothPos.current.x) * Math.min(delta * 3, 1);
+    smoothPos.current.y += (cy - smoothPos.current.y) * Math.min(delta * 3, 1);
+    smoothPos.current.z += (cz - smoothPos.current.z) * Math.min(delta * 3, 1);
+
+    camera.position.copy(smoothPos.current);
+
+    // Look-at target shifts with scroll
+    const lookX = m.x * 0.5 + Math.sin(t * Math.PI) * 0.3;
+    const lookY = 0 - t * 0.5 + m.y * 0.3;
+    const lookZ = 0;
+    targetLookAt.current.set(lookX, lookY, lookZ);
+    smoothLookAt.current.lerp(targetLookAt.current, Math.min(delta * 4, 1));
+    camera.lookAt(smoothLookAt.current);
+
+    // Subtle FOV zoom based on scroll
+    camera.fov = 45 + t * 10;
+    camera.updateProjectionMatrix();
+  });
+
+  return null;
+}
+
+// ═══════════════════════════════════════════
+// 💎 KDS 3D LETTERS — responds to scroll
+//
+// Letters shift, rotate, and transform as
+// the camera moves past them.
+// ═══════════════════════════════════════════
+function KDSLetters({ mat }: { mat: THREE.Material }) {
+  const group = useRef<THREE.Group>(null);
+
+  useFrame((state) => {
+    if (!group.current) return;
+    const t = globalScroll / Math.max(globalMaxScroll, 1);
+
+    // Slow cinematic rotation independent of scroll
+    group.current.rotation.y += state.delta * 0.02;
+
+    // Scroll-based letter spread — they "open up" as you scroll
+    const spread = 1 + t * 1.5;
+    group.current.scale.setScalar(1 - t * 0.3);
+
+    // Slight wobble during fly-by
+    group.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.1) * 0.03 + t * 0.15;
+    group.current.rotation.z = Math.cos(state.clock.elapsedTime * 0.08) * 0.02 + t * 0.08;
+
+    // Opacity fade near end
+    const parent = group.current.parent;
   });
 
   return (
+    <group ref={group}>
+      {/* K */}
+      <group position={[-1.4, 0, 0]}>
+        <mesh material={mat}><boxGeometry args={[0.12, 0.8, 0.12]} /></mesh>
+        <mesh material={mat} rotation={[0, 0, -0.6]} position={[0.2, 0.25, 0]}><boxGeometry args={[0.4, 0.1, 0.1]} /></mesh>
+        <mesh material={mat} rotation={[0, 0, 0.6]} position={[0.2, -0.25, 0]}><boxGeometry args={[0.4, 0.1, 0.1]} /></mesh>
+      </group>
+      {/* D */}
+      <group position={[-0.3, 0, 0]}>
+        <mesh material={mat}><boxGeometry args={[0.12, 0.8, 0.12]} /></mesh>
+        <mesh material={mat} position={[0.18, 0.35, 0]}><boxGeometry args={[0.45, 0.1, 0.1]} /></mesh>
+        <mesh material={mat} position={[0.18, -0.35, 0]}><boxGeometry args={[0.45, 0.1, 0.1]} /></mesh>
+        {/* D curve approximation */}
+        <mesh material={mat} rotation={[0, 0, Math.PI / 2]} position={[0.4, 0, 0]}><torusGeometry args={[0.25, 0.05, 6, 12, Math.PI]} /></mesh>
+      </group>
+      {/* S */}
+      <group position={[0.85, 0, 0]}>
+        <mesh material={mat} position={[-0.2, 0.3, 0]}><boxGeometry args={[0.45, 0.1, 0.1]} /></mesh>
+        <mesh material={mat} position={[0.15, -0.3, 0]}><boxGeometry args={[0.45, 0.1, 0.1]} /></mesh>
+        <mesh material={mat} position={[-0.32, 0, 0]}><boxGeometry args={[0.1, 0.5, 0.1]} /></mesh>
+        <mesh material={mat} position={[0.25, 0, 0]}><boxGeometry args={[0.1, 0.5, 0.1]} /></mesh>
+        <mesh material={mat} rotation={[0, 0, -0.3]} position={[-0.07, 0.02, 0]}><boxGeometry args={[0.15, 0.1, 0.1]} /></mesh>
+      </group>
+
+      {/* Subtitle line */}
+      <mesh position={[0, -0.85, 0]}>
+        <planeGeometry args={[3.5, 0.004]} />
+        <meshPhysicalMaterial color="#BFF549" emissive="#BFF549" emissiveIntensity={0.4} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+// ═══════════════════════════════════════════
+// ✨ PARALLAX PARTICLES — depth layers
+//
+// Three particle layers at different depths
+// that move at different speeds = true parallax
+// ═══════════════════════════════════════════
+function ParallaxParticles() {
+  const layers = [
+    { count: 800, zMin: -5, zMax: 15, size: 0.015, speed: 0.3, opacity: 0.4 },
+    { count: 600, zMin: 2, zMax: 10, size: 0.025, speed: 0.6, opacity: 0.5 },
+    { count: 300, zMin: 5, zMax: 20, size: 0.04, speed: 1.0, opacity: 0.6 },
+  ];
+
+  return (
     <>
-      {shardData.map((d, i) => (
-        <mesh
-          key={i}
-          ref={(el) => {
-            if (el) {
-              el.scale.setScalar(d.scale);
-              if (!shards.current[i]) {
-                shards.current[i] = {
-                  mesh: el,
-                  rotSpeed: new THREE.Vector3(
-                    (Math.random() - 0.5) * 2,
-                    (Math.random() - 0.5) * 2,
-                    (Math.random() - 0.5) * 0.5
-                  ),
-                  floatSpeed: 0.5 + Math.random() * 1.2,
-                  floatAmp: 0.4 + Math.random() * 0.4,
-                  orbitRadius: d.orbitRadius,
-                  orbitSpeed: d.orbitSpeed,
-                  orbitPhase: d.orbitPhase,
-                };
-              }
-            }
-          }}
-          geometry={d.geometry}
-          material={d.material}
-        />
+      {layers.map((layer, li) => (
+        <ParticleLayer key={li} {...layer} />
       ))}
     </>
   );
 }
 
-// ─── Atmospheric Particles ───
-function Particles({ count = 500 }: { count?: number }) {
+function ParticleLayer({ count, zMin, zMax, size, speed, opacity }: any) {
   const ref = useRef<THREE.Points>(null);
   const data = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
-
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
     const palette = [
       new THREE.Color('#BFF549'),
       new THREE.Color('#FACC15'),
       new THREE.Color('#60A5FA'),
+      new THREE.Color('#a78bfa'),
       new THREE.Color('#ffffff'),
     ];
-
     for (let i = 0; i < count; i++) {
-      const i3 = i * 3;
-      // Spherical distribution
-      const r = 5 + Math.random() * 20;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      positions[i3] = r * Math.sin(phi) * Math.cos(theta);
-      positions[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      positions[i3 + 2] = r * Math.cos(phi);
+      pos[i*3] = (Math.random() - 0.5) * 25;
+      pos[i*3+1] = (Math.random() - 0.5) * 20;
+      pos[i*3+2] = zMin + Math.random() * (zMax - zMin);
       const c = palette[Math.floor(Math.random() * palette.length)];
-      colors[i3] = c.r;
-      colors[i3 + 1] = c.g;
-      colors[i3 + 2] = c.b;
-      sizes[i] = 0.008 + Math.random() * 0.025;
+      col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
     }
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    return geometry;
-  }, [count]);
+    const bg = new THREE.BufferGeometry();
+    bg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    bg.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    return bg;
+  }, [count, zMin, zMax]);
 
   useFrame((state, delta) => {
     if (!ref.current) return;
-    ref.current.rotation.y += delta * 0.02;
-    // Gentle drift
-    const positions = ref.current.geometry.attributes.position.array as Float32Array;
-    for (let i = 0; i < positions.length; i += 3) {
-      positions[i + 1] += Math.sin(state.clock.elapsedTime * 0.5 + i * 0.01) * 0.001;
+    const t = globalScroll / Math.max(globalMaxScroll, 1);
+    ref.current.rotation.y = t * 0.15 * speed + state.clock.elapsedTime * 0.01;
+    // Atmospheric drift
+    const p = ref.current.geometry.attributes.position.array as Float32Array;
+    for (let i = 0; i < p.length; i += 3) {
+      p[i+1] += Math.sin(t * Math.PI * 2 + i * 0.01) * 0.001 * speed;
     }
     ref.current.geometry.attributes.position.needsUpdate = true;
   });
 
   return (
     <points ref={ref} geometry={data}>
-      <pointsMaterial 
-        vertexColors 
-        size={0.02} 
-        sizeAttenuation 
-        transparent 
-        opacity={0.6} 
-        blending={THREE.AdditiveBlending} 
-        depthWrite={false} 
-      />
+      <pointsMaterial size={size} vertexColors transparent={true} opacity={opacity} sizeAttenuation blending={THREE.AdditiveBlending} depthWrite={false} />
     </points>
   );
 }
 
-// ─── Main KDS Text ───
-function KDSLogo() {
-  const groupRef = useRef<THREE.Group>(null);
+// ═══════════════════════════════════════════
+// 💫 FLOATING SHARDS — scroll-reactive
+// ═══════════════════════════════════════════
+function ParallaxShards() {
+  const shards = useRef<Array<{ mesh: THREE.Mesh; baseY: number; speed: number; rotSpeed: THREE.Vector3 }>>([]);
 
-  useFrame((state, delta) => {
-    if (!groupRef.current) return;
-    mouseSmooth.lerp(mouseTarget, 0.04);
+  const shardData = useMemo(() =>
+    Array.from({ length: 14 }, (_, i) => ({
+      pos: [(Math.random() - 0.5) * 10 + 2, (Math.random() - 0.5) * 8, Math.random() * 12 - 2] as [number, number, number],
+      scale: 0.015 + Math.random() * 0.06,
+    })), []);
 
-    // Cinematic rotation (very slow like CFenter)
-    groupRef.current.rotation.y += delta * 0.03;
-    
-    // Add mouse influence to rotation
-    groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.15 + mouseSmooth.y * Math.PI * 0.15) * 0.08;
-    groupRef.current.rotation.z = Math.cos(state.clock.elapsedTime * 0.12 + mouseSmooth.x * Math.PI * 0.12) * 0.03;
+  const mat = useMemo(() => new THREE.MeshPhysicalMaterial({
+    color: '#BFF549', metalness: 0.8, roughness: 0.2,
+    emissive: '#BFF549', emissiveIntensity: 0.04,
+    transparent: true, opacity: 0.2,
+  }), []);
+
+  useFrame((state) => {
+    const t = globalScroll / Math.max(globalMaxScroll, 1);
+    shards.current.forEach((s, i) => {
+      if (!s) return;
+      s.mesh.position.y = s.baseY + Math.sin(state.clock.elapsedTime * s.speed) * 0.3;
+      // Scroll pushes shards
+      s.mesh.position.x += s.rotSpeed.x * 0.0003 * (1 + t * 2);
+      s.mesh.rotation.x += s.rotSpeed.x * state.delta;
+      s.mesh.rotation.y += s.rotSpeed.y * state.delta;
+    });
   });
 
-  return (
-    <Float speed={0.8} rotationIntensity={0.08} floatIntensity={0.08}>
-      <group ref={groupRef}>
-        {/* Main 3D Text - Premium metallic look */}
-        <Text
-          font="/fonts/Inter-Black.ttf"
-          fontSize={1.8}
-          letterSpacing={0.04}
-          fontWeight={900}
-          material-toneMapped={false}
-        >
-          KDS
-          <MeshPhysicalMaterial
-            color="#d4af37"
-            metalness={1.0}
-            roughness={0.08}
-            clearcoat={1}
-            clearcoatRoughness={0.1}
-            envMapIntensity={2}
-            ior={2.4}
-            reflectivity={1}
-          />
-        </Text>
-        
-        {/* Gloss overlay */}
-        <Text
-          font="/fonts/Inter-Black.ttf"
-          fontSize={1.81}
-          letterSpacing={0.04}
-          fontWeight={900}
-          position={[0, 0, 0.01]}
-        >
-          KDS
-          <MeshPhysicalMaterial
-            color="#ffffff"
-            metalness={0}
-            roughness={0}
-            transparent
-            opacity={0.06}
-          />
-        </Text>
-
-        {/* Subtitle line */}
-        <mesh position={[0, -1.2, 0]}>
-          <planeGeometry args={[3, 0.003]} />
-          <MeshPhysicalMaterial 
-            color="#BFF549" 
-            emissive="#BFF549" 
-            emissiveIntensity={0.3} 
-            toneMapped={false} 
-          />
-        </mesh>
-
-        <Text
-          font="/fonts/Inter-Regular.ttf"
-          fontSize={0.11}
-          letterSpacing={0.18}
-          position={[0, -1.45, 0]}
-        >
-          KINGS DRIPPING SWAG • 2130
-          <meshBasicMaterial color="#BFF549" transparent opacity={0.45} />
-        </Text>
-
-        <Text
-          font="/fonts/Inter-Regular.ttf"
-          fontSize={0.065}
-          letterSpacing={0.12}
-          position={[0, -1.65, 0]}
-        >
-          MOVE YOUR MOUSE — SPIN THE WORLD
-          <meshBasicMaterial color="#ffffff" transparent opacity={0.15} />
-        </Text>
-      </group>
-    </Float>
-  );
-}
-
-// ─── Camera rig ───
-function CameraRig() {
-  const { camera } = useThree();
-  useFrame(() => {
-    // Smooth camera parallax
-    camera.position.x += (mouseSmooth.x * 0.4 - camera.position.x) * 0.05;
-    camera.position.y += (mouseSmooth.y * 0.25 - camera.position.y) * 0.05;
-    camera.lookAt(0, 0, 0);
-  });
-  return null;
-}
-
-// ─── Dramatic Studio Lighting ───
-function DramaticLights() {
   return (
     <>
-      {/* Key light - top right */}
-      <pointLight position={[8, 8, 5]} intensity={2.5} color="#BFF549" />
-      {/* Fill - left */}
-      <pointLight position={[-6, -2, 3]} intensity={1} color="#60A5FA" />
-      {/* Back rim - gold */}
-      <pointLight position={[0, 3, -6]} intensity={1.5} color="#FACC15" />
-      {/* Bottom bounce */}
-      <pointLight position={[0, -4, 2]} intensity={0.4} color="#a78bfa" />
-      {/* Far left rim */}
-      <pointLight position={[-4, 0, -3]} intensity={0.6} color="#ffffff" />
-      {/* Ambient */}
-      <ambientLight intensity={0.08} />
+      {shardData.map((d, i) => (
+        <mesh key={i} ref={(el) => {
+          if (el) {
+            el.scale.setScalar(d.scale);
+            if (!shards.current[i]) {
+              shards.current[i] = {
+                mesh: el,
+                baseY: d.pos[1],
+                speed: 0.3 + Math.random() * 0.5,
+                rotSpeed: new THREE.Vector3(
+                  (Math.random() - 0.5) * 0.02,
+                  (Math.random() - 0.5) * 0.02,
+                  0
+                ),
+              };
+            }
+          }
+        }} position={d.pos} material={mat}>
+          {i % 3 === 0 ? <octahedronGeometry /> : i % 3 === 1 ? <tetrahedronGeometry /> : <boxGeometry args={[1, 1, 0.15]} />}
+        </mesh>
+      ))}
     </>
   );
 }
 
 // ═══════════════════════════════════════════
-// MAIN EXPORT - CFENTER-STYLE HERO
+// 🌈 ORBITAL RINGS — parallax layers
 // ═══════════════════════════════════════════
-export default function ThreeHero() {
-  const [mounted, setMounted] = useState(false);
-  const [heroOpacity, setHeroOpacity] = useState(1);
-  const [contentOpacity, setContentOpacity] = useState(0);
+function OrbitalRings() {
+  const group = useRef<THREE.Group>(null);
+  useFrame((state) => {
+    if (!group.current) return;
+    const t = globalScroll / Math.max(globalMaxScroll, 1);
+    group.current.rotation.x = Math.sin(t * Math.PI * 0.5 + state.clock.elapsedTime * 0.06) * 0.2 + mouseSmooth.y * 0.15;
+    group.current.rotation.z = Math.cos(t * Math.PI * 0.3 + state.clock.elapsedTime * 0.04) * 0.15 + mouseSmooth.x * 0.12;
+  });
+  return (
+    <group ref={group}>
+      {[0, 1, 2].map(i => (
+        <mesh key={i} rotation={[Math.PI / 2 + i * 0.2, i * 0.5, i * 0.1]}>
+          <torusGeometry args={[2.5 + i * 0.5, 0.004, 6, 100]} />
+          <meshBasicMaterial color="#BFF549" transparent opacity={0.07 - i * 0.015} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+// ═══════════════════════════════════════════
+// 💡 STUDY LIGHTS — shift with scroll
+// ═══════════════════════════════════════════
+function ScrollLights() {
+  const group = useRef<THREE.Group>(null);
+  useFrame((state) => {
+    if (!group.current) return;
+    const t = globalScroll / Math.max(globalMaxScroll, 1);
+    group.current.rotation.y = t * Math.PI * 0.5;
+  });
+  return (
+    <group ref={group}>
+      <pointLight position={[5, 5, 5]} intensity={2} color="#BFF549" />
+      <pointLight position={[-5, -2, 3]} intensity={0.8} color="#60A5FA" />
+      <pointLight position={[0, 3, -5]} intensity={0.7} color="#FACC15" />
+      <pointLight position={[0, -5, 2]} intensity={0.3} color="#a78bfa" />
+    </group>
+  );
+}
+
+// ═══════════════════════════════════════════
+// 🖼️ MAIN — PARALLAX SCROLL HERO
+// ═══════════════════════════════════════════
+export default function ParallaxHero() {
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    
-    // Scroll-based fade for hero
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setHeroOpacity(Math.max(0, 1 - scrollY / 800));
-      setContentOpacity(Math.min(1, scrollY / 350));
+    setReady(true);
+    const update = () => {
+      globalScroll = window.scrollY;
+      globalMaxScroll = document.documentElement.scrollHeight - window.innerHeight;
     };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+    return () => window.removeEventListener('scroll', update);
   }, []);
 
-  const handleMouseMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  const onMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     mouseTarget.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouseTarget.y = -(e.clientY / window.innerHeight) * 2 + 1;
   }, []);
 
-  if (!mounted) return (
-    <div className="fixed inset-0 z-[1]" style={{ background: '#050510' }} />
-  );
+  if (!ready) return <div style={{ position: 'fixed', inset: 0, background: '#050510', zIndex: 1 }} />;
 
   return (
     <>
-      {/* ─── 3D HERO ─── */}
+      {/* ─── 3D PARALLAX CANVAS ─── */}
       <div
-        className="fixed inset-0 z-[1]"
         style={{
-          opacity: heroOpacity,
-          transition: 'opacity 0.3s ease-out',
-          pointerEvents: heroOpacity > 0.1 ? 'auto' : 'none',
+          position: 'fixed', inset: 0, zIndex: 1,
           background: '#050510',
+          pointerEvents: 'auto',
         }}
-        onPointerMove={handleMouseMove}
+        onPointerMove={onMove}
       >
         <Canvas
-          camera={{ position: [0, 0, 6], fov: 45, near: 0.1, far: 80 }}
+          camera={{ position: [0, 0, 6], fov: 45, near: 0.1, far: 100 }}
           dpr={[1, 1.5]}
-          gl={{
-            antialias: true,
-            alpha: true,
-            toneMapping: THREE.ACESFilmicToneMapping,
-            toneMappingExposure: 1.1,
-          }}
+          gl={{ antialias: true, alpha: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
         >
-          <CameraRig />
-          <DramaticLights />
-          <fog attach="fog" args={['#050510', 12, 25]} />
+          <ParallaxCamera />
+          <ScrollLights />
+          <ambientLight intensity={0.06} />
+          <fog attach="fog" args={['#050510', 10, 40]} />
 
-          <KDSLogo />
-          <FloatingShards />
-          <Particles count={800} />
-
-          {/* ─── Environment map (studio reflection) ─── */}
-          <Environment preset="city" />
+          <KDSLetters mat={new THREE.MeshPhysicalMaterial({
+            color: '#d4af37', metalness: 1, roughness: 0.05,
+            clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 2,
+            reflectivity: 1, ior: 2.33,
+          })} />
+          <OrbitalRings />
+          <ParallaxParticles />
+          <ParallaxShards />
         </Canvas>
 
-        {/* ─── CSS overlay effects ─── */}
-        {/* Bottom gradient — seamless scroll transition */}
-        <div
-          className="absolute bottom-0 left-0 right-0 pointer-events-none"
-          style={{
-            height: '30vh',
-            background: 'linear-gradient(to top, #050510 0%, transparent 100%)',
-            zIndex: 2,
-          }}
-        />
-
-        {/* Vignette overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse at center, transparent 40%, rgba(5,5,16,0.7) 100%)',
-            zIndex: 3,
-          }}
-        />
+        {/* Vignette */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 2,
+          background: 'radial-gradient(ellipse at 50% 30%, transparent 40%, rgba(5,5,16,0.65) 100%)',
+        }} />
       </div>
 
-      {/* ─── SCROLL CONTENT FADE IN ─── */}
-      <div
-        style={{
-          opacity: contentOpacity,
-          transition: 'opacity 0.5s ease-out',
-          position: 'relative',
-          zIndex: 10,
-        }}
-      >
-        <div style={{ height: '100vh' }} />
+      {/* ─── SCROLL CONTENT (transparent bg so 3D shows through) ─── */}
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <div style={{ height: '20vh' }} />
+        <div style={{ width: '100%', maxWidth: 700, margin: '0 auto', padding: '80px 20px' }}>
+          {/* Spacer sections for scroll-driven camera movement */}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} style={{ height: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{
+                background: 'rgba(10,10,20,0.4)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                borderRadius: 12,
+                padding: 40,
+                maxWidth: 500,
+                textAlign: 'center',
+              }}>
+                <span style={{ color: 'rgba(191,245,73,0.6)', fontFamily: "'JetBrains Mono', monospace", fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Section 0{i + 1}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ height: '40vh' }} />
       </div>
     </>
   );
