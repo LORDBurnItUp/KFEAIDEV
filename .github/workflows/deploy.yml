@@ -1,0 +1,109 @@
+name: 🚀 Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npx tsc --noEmit --skipLibCheck
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: |
+            .next/
+            public/
+            package.json
+            package-lock.json
+            next.config.js
+            src/
+            postcss.config.js
+            tailwind.config.js
+          retention-days: 7
+
+  deploy-hostinger:
+    name: Deploy to Hostinger
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: ${{ vars.DEPLOY_TARGET == 'hostinger' || vars.DEPLOY_TARGET == '' }}
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: deploy
+
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.HOSTINGER_SSH_KEY }}
+
+      - name: Add Hostinger to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.HOSTINGER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Deploy via rsync
+        run: |
+          echo "🚀 Deploying to Hostinger..."
+          rsync -avz --delete \
+            --exclude='.env' \
+            --exclude='.env.local' \
+            --exclude='node_modules' \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            deploy/ ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_DEPLOY_PATH }}/
+
+      - name: Install production deps on remote
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }} << 'EOF'
+            cd ${{ secrets.HOSTINGER_DEPLOY_PATH }}
+            npm install --production --no-audit --no-fund
+            pm2 restart kds || pm2 start npm --name kds -- start
+          EOF
+
+      - name: Verify deployment
+        run: |
+          echo "✅ Deployed to https://${{ secrets.APP_DOMAIN || 'thekingsdrippin.io' }}"
+
+  notify:
+    name: Deployment Notification
+    needs: deploy-hostinger
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack / Discord Notify
+        run: |
+          echo "Deployment ${{ needs.deploy-hostinger.result }} — ${{ github.sha }}"

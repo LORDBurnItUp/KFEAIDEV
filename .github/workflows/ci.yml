@@ -1,0 +1,72 @@
+name: ✅ CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches-ignore: [main]
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npm ci
+      - run: npx tsc --noEmit --skipLibCheck
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+  # Future: add actual test runner (Jest/Vitest) here
+  # test:
+  #   name: Test
+  #   runs-on: ubuntu-latest
+  #   needs: [lint, typecheck]
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with: { node-version: 22, cache: 'npm' }
+  #     - run: npm ci
+  #     - run: npm test
+
+  pr-status:
+    name: PR Status
+    needs: [lint, typecheck, build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All checks passed
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: echo "✅ All CI checks passed"
