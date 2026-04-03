@@ -298,17 +298,17 @@ function FlythroughCamera({ chapterProgress }: { chapterProgress: number }) {
     const c = camera as THREE.PerspectiveCamera;
     // chapterProgress: 0→1 maps z from +5 (far) → -5 (emerging on other side)
     const targetZ = 5 - chapterProgress * 10;
-    state.z += (targetZ - state.z) * 0.06;
+    state.current.z += (targetZ - state.current.z) * 0.06;
 
     // FOV: wider when passing through (more dramatic)
     const proximity = 1 - Math.abs(chapterProgress - 0.5) * 2; // 1 at center, 0 at edges
     const targetFov = 40 + proximity * 25;
-    state.fov += (targetFov - state.fov) * 0.05;
+    state.current.fov += (targetFov - state.current.fov) * 0.05;
 
-    c.position.z = state.z;
+    c.position.z = state.current.z;
     c.position.x += (mouseVec.x * 0.2 * proximity - c.position.x) * 0.03;
     c.position.y += (-mouseVec.y * 0.15 * proximity - c.position.y) * 0.03;
-    c.fov = state.fov;
+    c.fov = state.current.fov;
     c.lookAt(0, 0, -5);
     c.updateMatrix();
     c.updateProjectionMatrix();
@@ -327,7 +327,7 @@ function Scene({ chapter, cameraZ, chapterProgress }: { chapter: typeof chapters
       <ambientLight intensity={chapter.glowIntensity * 0.1} />
       <pointLight position={[0, 0, 0]} intensity={chapter.glowIntensity * (0.5 + Math.abs(cameraZ) * 0.15)}
         color={chapter.planetColor} distance={10} />
-      <pointLight position={[camState.z > 0 ? 4 : -4, 4, 4]} intensity={0.4} color={chapter.particleColor} distance={12} />
+      <pointLight position={[state.current.z > 0 ? 4 : -4, 4, 4]} intensity={0.4} color={chapter.particleColor} distance={12} />
       <StarField />
       <Planet color={chapter.planetColor} glow={chapter.glowIntensity} hasRing={chapter.hasRing} cameraZ={cameraZ} />
       <PlanetParticles mode={chapter.particleMode} color={chapter.particleColor}
