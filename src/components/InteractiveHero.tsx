@@ -30,7 +30,7 @@ interface Orb {
   targetY: number;
   size: number;
   color: string;
-  blur: number;
+  blur: string;
   lag: number; // how slow/fast to follow
 }
 
@@ -149,6 +149,8 @@ export default function InteractiveHero() {
 
     const trails = canvas.getContext('2d')!;
     const dots: { x: number; y: number; size: number; alpha: number }[] = [];
+    const W = () => canvas.width;
+    const H = () => canvas.height;
 
     function renderDot() {
       dots.push({
@@ -160,7 +162,7 @@ export default function InteractiveHero() {
     }
 
     function animate() {
-      trails.clearRect(0, 0, canvas.width, canvas.height);
+      trails.clearRect(0, 0, W(), H());
 
       // Render trails
       for (let i = dots.length - 1; i >= 0; i--) {
