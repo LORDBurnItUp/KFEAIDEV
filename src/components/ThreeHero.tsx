@@ -90,8 +90,9 @@ function ParallaxCamera() {
     camera.lookAt(smoothLookAt.current);
 
     // Subtle FOV zoom based on scroll
-    camera.fov = 45 + t * 10;
-    camera.updateProjectionMatrix();
+    const pc = camera as THREE.PerspectiveCamera;
+    pc.fov = 45 + t * 10;
+    pc.updateProjectionMatrix();
   });
 
   return null;
