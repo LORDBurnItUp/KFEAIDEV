@@ -166,9 +166,7 @@ function Planet({ color, glow, cameraZ, bloomColor, hasRing }: { color: string, 
       {/* Saturn ring with glow */}
       {hasRing && <mesh rotation={[Math.PI / 2.4, 0, 0]}>
         <ringGeometry args={[1.35, 2.8, 128]} />
-        <meshStandardMaterial side={THREE.DoubleSide} transparent={true} opacity={0.5 * planetOpacity} metalness={0.8} roughness={0.25} color={color}>
-          <color attach="color" args={color} />
-        </meshStandardMaterial>
+        <meshStandardMaterial side={THREE.DoubleSide} transparent={true} opacity={0.5 * planetOpacity} metalness={0.8} roughness={0.25} color={new THREE.Color(color)} />
       </mesh>}
     </group>
   );
@@ -325,7 +323,7 @@ function PostProcessing({ bloom, chapterProgress, cameraZ }: { bloom: number, ch
   const proximity = 1 - Math.abs(chapterProgress - 0.5) * 2;
   const chromaticAmount = proximity * 0.003;
   return (
-    <EffectComposer disableNormalPass multisampling={2}>
+    <EffectComposer enableNormalPass={false} multisampling={2}>
       <Bloom intensity={bloom * 0.8} luminanceThreshold={0.85} luminanceSmoothing={0.9} mipmapBlur radius={0.5} />
       <DepthOfField focusDistance={Math.max(0, Math.abs(cameraZ) - 0.8) * 0.15} focalLength={0.02 + proximity * 0.03} bokehScale={proximity * 3} />
       <ChromaticAberration offset={new THREE.Vector2(chromaticAmount, chromaticAmount)} />
