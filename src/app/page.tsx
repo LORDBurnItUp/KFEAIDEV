@@ -10,301 +10,253 @@ const AmbientSound = dynamic(() => import('@/components/AmbientSound'), { ssr: f
 // Shared mouse state
 const mouseVec = { x: 0, y: 0 };
 
-// ════════════════════════════════════════
-// SOLAR SYSTEM CHAPTERS — 10 unique worlds
-// ════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// 🌌 SOLAR SYSTEM CHAPTERS — 10 worlds, each unique
+// ═══════════════════════════════════════════════════════
 const chapters = [
-  { name: 'THE SUN', subtitle: 'Where it all begins', planetColor: '#FF6600', bgDark: '#0a0400', particleColor: '#FF8833', particleCount: 500, particleSize: 0.05, particleMode: 'outward', glowIntensity: 2.0, content: 'Design meets intelligence in 3D space. Enter the system to begin your journey.', stats: null },
-  { name: 'MERCURY', subtitle: 'Speed and precision', planetColor: '#A09080', bgDark: '#08080a', particleColor: '#C0B0A0', particleCount: 180, particleSize: 0.02, particleMode: 'fastOrbit', glowIntensity: 0.5, content: 'Built for speed. Every millisecond counts in the race to build the future.', stats: null },
-  { name: 'VENUS', subtitle: 'The clouded beauty', planetColor: '#E8C56D', bgDark: '#0a0800', particleColor: '#F0D080', particleCount: 300, particleSize: 0.03, particleMode: 'cloud', glowIntensity: 0.5, content: 'Shrouded in golden clouds. Beneath the surface, brilliance awaits.', stats: null },
-  { name: 'EARTH', subtitle: 'Home of KDS', planetColor: '#4488CC', bgDark: '#050a10', particleColor: '#44AA66', particleCount: 350, particleSize: 0.025, particleMode: 'life', glowIntensity: 0.7, content: '12.8K+ developers from around the world. The hub where AI builders connect.', stats: [{ n: '12.8K', l: 'Members' }, { n: '847', l: 'Active Today' }, { n: '99.7%', l: 'Uptime' }] },
-  { name: 'MARS', subtitle: 'The red frontier', planetColor: '#CC4422', bgDark: '#0a0502', particleColor: '#DD5533', particleCount: 600, particleSize: 0.03, particleMode: 'storm', glowIntensity: 0.7, content: 'The next frontier. KDS is colonizing the future of AI communities.', stats: null },
-  { name: 'JUPITER', subtitle: 'King of planets', planetColor: '#C8A060', bgDark: '#0a0800', particleColor: '#D4B070', particleCount: 700, particleSize: 0.02, particleMode: 'bands', glowIntensity: 0.5, content: 'The Great Red Spot of AI. The largest community hub this side of the asteroid belt.', stats: [{ n: '6', l: 'Features' }, { n: '99', l: 'Pages' }, { n: '∞', l: 'Scale' }] },
-  { name: 'SATURN', subtitle: 'The ringed giant', planetColor: '#D4B878', bgDark: '#080800', particleColor: '#E8D088', particleCount: 500, particleSize: 0.015, particleMode: 'ringDisk', glowIntensity: 0.5, hasRing: true, content: 'Rings of opportunity. KDS connects creators in an endless orbit.', stats: null },
-  { name: 'URANUS', subtitle: 'The tilted one', planetColor: '#88CCDD', bgDark: '#00080a', particleColor: '#A0E0E8', particleCount: 250, particleSize: 0.02, particleMode: 'tilted', glowIntensity: 0.4, content: 'Think different. KDS approaches community building from a completely new angle.', stats: null },
-  { name: 'NEPTUNE', subtitle: 'The deep blue', planetColor: '#3366CC', bgDark: '#00000a', particleColor: '#4488EE', particleCount: 400, particleSize: 0.03, particleMode: 'jets', glowIntensity: 0.6, content: 'The final frontier before the edge. KDS pushes the boundaries of what an AI community can be.', stats: null },
-  { name: 'BEYOND', subtitle: 'Welcome home', planetColor: '#BFF549', bgDark: '#050510', particleColor: '#BFF549', particleCount: 600, particleSize: 0.025, particleMode: 'constellation', glowIntensity: 1.0, content: 'Build, earn, and connect with developers, CEOs, and engineers who think like you. Welcome to 2130.', stats: null, link: '/community' },
+  { name: 'THE SUN', subtitle: 'Where it all begins', planetColor: '#FF6600', bgDark: '#0a0200', particleColor: '#FF8833', particleCount: 800, particleSize: 0.06, particleMode: 'fire', glowIntensity: 2.5, content: 'Design meets intelligence in 3D space. Enter the system to begin your journey.', stats: null },
+  { name: 'MERCURY', subtitle: 'Speed and precision', planetColor: '#8090A0', bgDark: '#060608', particleColor: '#A0B0C0', particleCount: 200, particleSize: 0.015, particleMode: 'fastOrbit', glowIntensity: 0.4, content: 'Built for speed. Every millisecond counts.', stats: null },
+  { name: 'VENUS', subtitle: 'The clouded beauty', planetColor: '#E8C56D', bgDark: '#0a0800', particleColor: '#F0D080', particleCount: 350, particleSize: 0.035, particleMode: 'cloud', glowIntensity: 0.6, content: 'Shrouded in golden clouds. Brilliance awaits beneath the surface.', stats: null },
+  { name: 'EARTH', subtitle: 'Home of KDS', planetColor: '#2266AA', bgDark: '#030608', particleColor: '#44CC77', particleCount: 500, particleSize: 0.025, particleMode: 'life', glowIntensity: 0.8, content: '12.8K+ developers from around the world. The hub where AI builders connect.', stats: [{ n: '12.8K', l: 'Members' }, { n: '847', l: 'Active Today' }, { n: '99.7%', l: 'Uptime' }] },
+  { name: 'MARS', subtitle: 'The red frontier', planetColor: '#BB3322', bgDark: '#080200', particleColor: '#DD5533', particleCount: 600, particleSize: 0.03, particleMode: 'storm', glowIntensity: 0.8, content: 'The next frontier. KDS is colonizing the future.', stats: null },
+  { name: 'JUPITER', subtitle: 'King of planets', planetColor: '#C8A060', bgDark: '#080600', particleColor: '#D4B070', particleCount: 700, particleSize: 0.02, particleMode: 'bands', glowIntensity: 0.5, content: 'The largest community hub this side of the asteroid belt.', stats: [{ n: '6', l: 'Features' }, { n: '99', l: 'Pages' }, { n: '∞', l: 'Scale' }] },
+  { name: 'SATURN', subtitle: 'The ringed giant', planetColor: '#D4B878', bgDark: '#060600', particleColor: '#E8D088', particleCount: 500, particleSize: 0.015, particleMode: 'ringDisk', glowIntensity: 0.6, hasRing: true, content: 'Rings of opportunity in an endless orbit.', stats: null },
+  { name: 'URANUS', subtitle: 'The tilted one', planetColor: '#77BBCC', bgDark: '#00060a', particleColor: '#99E0E8', particleCount: 250, particleSize: 0.02, particleMode: 'tilted', glowIntensity: 0.4, content: 'Think different. A completely new angle.', stats: null },
+  { name: 'NEPTUNE', subtitle: 'The deep blue', planetColor: '#2244BB', bgDark: '#000006', particleColor: '#3366DD', particleCount: 400, particleSize: 0.03, particleMode: 'jets', glowIntensity: 0.7, content: 'The final frontier. KDS pushes all boundaries.', stats: null },
+  { name: 'BEYOND', subtitle: 'Welcome home', planetColor: '#BFF549', bgDark: '#030308', particleColor: '#BFF549', particleCount: 800, particleSize: 0.025, particleMode: 'constellation', glowIntensity: 1.2, content: 'Build, earn, and connect. Welcome to 2130.', stats: null, link: '/community' },
 ];
 
-// ════════════════════════════════════════
-// 🌟 STAR FIELD (fixed background, slightly parallax)
-// ════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// 🌟 STAR FIELD
+// ═══════════════════════════════════════════════════════
 function StarField() {
   const ref = useRef<THREE.Points>(null);
   const geo = useMemo(() => {
-    const pos = new Float32Array(4000 * 3);
-    for (let i = 0; i < 4000; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 150;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 150;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 150;
+    const pos = new Float32Array(5000 * 3);
+    for (let i = 0; i < 5000; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 200;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 200;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 200;
     }
     return new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(pos, 3));
   }, []);
   useFrame((state) => {
-    if (ref.current) ref.current.rotation.y = state.clock.elapsedTime * 0.005;
+    if (ref.current) {
+      ref.current.rotation.y = state.clock.elapsedTime * 0.003;
+      ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.002) * 0.02;
+    }
   });
-  return <points ref={ref} geometry={geo}><pointsMaterial size={0.06} color="#FFFFFF" transparent opacity={0.35} sizeAttenuation depthWrite={false} /></points>;
+  return <points ref={ref} geometry={geo}><pointsMaterial size={0.08} color="#FFFFFF" transparent={true} opacity={0.45} sizeAttenuation={true} depthWrite={false} /></points>;
 }
 
-// ════════════════════════════════════════
-// 🌍 PLANET — becomes transparent when camera is close
-// ════════════════════════════════════════
-function Planet({ color, glow, hasRing, cameraZ }: { color: string, glow: number, hasRing?: boolean, cameraZ: number }) {
+// ═══════════════════════════════════════════════════════
+// 🌍 PLANET — custom shader, transparent on flythrough
+// ═══════════════════════════════════════════════════════
+function Planet({ color, glow, cameraZ, hasRing }: { color: string, glow: number, cameraZ: number, hasRing?: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
-  // Opacity drops as camera approaches z=0 (passing through)
   const planetOpacity = Math.min(1, Math.abs(cameraZ) / 1.5);
-  const planetScale = Math.max(0.5, 1 - (1 - planetOpacity) * 0.5);
+  const planetScale = Math.max(0.3, 1 - (1 - planetOpacity) * 0.7);
+
+  const { vertexShader, fragmentShader } = useMemo(() => ({
+    vertexShader: `
+      uniform float uTime;
+      varying vec3 vNormal; varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        vNormal = normalize(normalMatrix * normal);
+        vec3 pos = position + normal * sin(pos.x * 3.0 + uTime) * 0.02 + normal * cos(pos.y * 2.0 + uTime * 0.7) * 0.015;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor; uniform float uTime; uniform float uOpacity;
+      varying vec3 vNormal; varying vec2 vUv;
+      void main() {
+        float pattern = sin(vUv.x * 12.0 + uTime * 0.5) * sin(vUv.y * 8.0 + uTime * 0.3) * 0.1;
+        vec3 col = uColor + pattern;
+        col += uColor * pow(1.0 - max(dot(normalize(cameraPosition - vec3(0,0,5)), vNormal), 0.0), 2.5) * 0.8;
+        col += vec3(1.0) * pow(1.0 - max(dot(normalize(cameraPosition - vec3(0,0,5)), vNormal), 0.0), 4.0) * 0.15;
+        gl_FragColor = vec4(col, uOpacity);
+      }
+    `,
+  }), []);
 
   useFrame((state, delta) => {
     if (meshRef.current) {
       meshRef.current.rotation.y += delta * 0.08;
       meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.15) * 0.03;
       meshRef.current.scale.setScalar(planetScale);
+      if (meshRef.current.material) {
+        (meshRef.current.material as THREE.ShaderMaterial).uniforms.uTime.value = state.clock.elapsedTime;
+        (meshRef.current.material as THREE.ShaderMaterial).uniforms.uOpacity.value = planetOpacity;
+      }
     }
     if (glowRef.current) {
-      glowRef.current.rotation.y -= delta * 0.02;
-      glowRef.current.scale.setScalar(1.3 + Math.sin(state.clock.elapsedTime * 0.6 + (1 - planetOpacity) * 4) * 0.08);
-      (glowRef.current.material as THREE.MeshBasicMaterial).opacity = 0.08 * planetOpacity;
+      glowRef.current.rotation.y -= delta * 0.015;
+      glowRef.current.scale.setScalar(1.4 + Math.sin(state.clock.elapsedTime * 0.5) * 0.05 + (1 - planetOpacity) * 0.8);
+      (glowRef.current.material as THREE.MeshBasicMaterial).opacity = 0.06 * planetOpacity + (1 - planetOpacity) * 0.12;
     }
   });
 
   return (
     <group>
-      {/* Glow halo (fades as you pass through) */}
       <mesh ref={glowRef}>
-        <sphereGeometry args={[1.8, 32, 32]} />
-        <meshBasicMaterial color={color} transparent opacity={0.08 * planetOpacity} depthWrite={false} />
+        <sphereGeometry args={[1.6, 32, 32]} />
+        <meshBasicMaterial color={color} transparent={true} opacity={0.06} side={THREE.BackSide} depthWrite={false} />
       </mesh>
-      {/* Main planet */}
       <mesh ref={meshRef}>
-        <sphereGeometry args={[1, 48, 48]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={glow * 0.15} metalness={0.3} roughness={0.7} transparent={true} opacity={planetOpacity} />
+        <sphereGeometry args={[1, 64, 64]} />
+        <shaderMaterial vertexShader={vertexShader} fragmentShader={fragmentShader} uniforms={{
+          uColor: { value: new THREE.Color(color) },
+          uTime: { value: 0 },
+          uOpacity: { value: planetOpacity },
+        }} transparent={true} />
       </mesh>
-      {/* Saturn ring */}
-      {hasRing && <mesh rotation={[Math.PI / 2.4, 0, 0]}><ringGeometry args={[1.3, 2.5, 64]} /><meshStandardMaterial color={color} side={THREE.DoubleSide} transparent opacity={0.4 * planetOpacity} metalness={0.6} roughness={0.4} /></mesh>}
+      {hasRing && <mesh rotation={[Math.PI / 2.4, 0, 0]}>
+        <ringGeometry args={[1.3, 2.6, 128]} />
+        <meshStandardMaterial side={THREE.DoubleSide} transparent={true} opacity={0.5 * planetOpacity} metalness={0.7} roughness={0.3} color={color} />
+      </mesh>}
     </group>
   );
 }
 
-// ════════════════════════════════════════
-// ✨ PLANET PARTICLES + SCATTER ON FLYTHROUGH
-// ════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// ✨ PLANET PARTICLES — scatter on flythrough
+// ═══════════════════════════════════════════════════════
 function PlanetParticles({ mode, color, count, size, cameraZ }: { mode: string, color: string, count: number, size: number, cameraZ: number }) {
   const ref = useRef<THREE.Points>(null);
-  const scatterAmount = useMemo(() => {
-    // Scattering: as camera approaches z=0, particles push outward
-    return count;
-  }, [count]);
-
-  const { positions, velocities } = useMemo(() => {
+  const { positions, velocities, colors } = useMemo(() => {
     const pos = new Float32Array(count * 3);
     const vel = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    const c = new THREE.Color(color);
     for (let i = 0; i < count; i++) {
+      const i3 = i * 3;
+      const r = Math.random();
       switch (mode) {
-        case 'outward': {
-          const theta = Math.random() * Math.PI * 2;
-          const phi = Math.acos(2 * Math.random() - 1);
-          const r = 1.5 + Math.random() * 3;
-          pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-          pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-          pos[i * 3 + 2] = r * Math.cos(phi);
-          vel[i * 3] = pos[i * 3] * 0.002; vel[i * 3 + 1] = pos[i * 3 + 1] * 0.002; vel[i * 3 + 2] = pos[i * 3 + 2] * 0.002;
-          break;
+        case 'fire': {
+          const theta = Math.random() * Math.PI * 2, phi = Math.acos(2 * Math.random() - 1), rad = 1.2 + r * 4;
+          pos[i3] = rad * Math.sin(phi) * Math.cos(theta); pos[i3+1] = rad * Math.sin(phi) * Math.sin(theta); pos[i3+2] = rad * Math.cos(phi);
+          vel[i3] = pos[i3] * 0.003; vel[i3+1] = pos[i3+1] * 0.003; vel[i3+2] = pos[i3+2] * 0.003; break;
         }
         case 'fastOrbit': {
-          const angle = Math.random() * Math.PI * 2;
-          const r = 1.3 + Math.random() * 1.5;
-          pos[i * 3] = Math.cos(angle) * r; pos[i * 3 + 1] = (Math.random() - 0.5) * 0.4; pos[i * 3 + 2] = Math.sin(angle) * r;
-          vel[i * 3] = -Math.sin(angle) * 0.008; vel[i * 3 + 2] = Math.cos(angle) * 0.008;
-          break;
+          const angle = Math.random() * Math.PI * 2, rad = 1.3 + r * 1.5;
+          pos[i3] = Math.cos(angle) * rad; pos[i3+1] = (Math.random()-0.5)*0.3; pos[i3+2] = Math.sin(angle) * rad;
+          vel[i3] = -Math.sin(angle)*0.012; vel[i3+2] = Math.cos(angle)*0.012; break;
         }
         case 'cloud': {
-          const angle = Math.random() * Math.PI * 2;
-          const r = 1.5 + Math.random() * 2;
-          pos[i * 3] = Math.cos(angle) * r; pos[i * 3 + 1] = (Math.random() - 0.5) * 1.5; pos[i * 3 + 2] = Math.sin(angle) * r;
-          vel[i * 3] = 0; vel[i * 3 + 2] = 0;
-          break;
+          const angle = Math.random() * Math.PI * 2, rad = 1.5 + r * 2;
+          pos[i3] = Math.cos(angle)*rad; pos[i3+1] = (Math.random()-0.5)*1.5; pos[i3+2] = Math.sin(angle)*rad; break;
         }
         case 'life': {
-          const angle = Math.random() * Math.PI * 2;
-          const r = 1.5 + Math.random() * 2.5;
-          pos[i * 3] = Math.cos(angle) * r; pos[i * 3 + 1] = Math.sin(angle * 2) * 0.3; pos[i * 3 + 2] = Math.sin(angle) * r;
-          break;
+          const angle = Math.random() * Math.PI * 2, rad = 1.5 + r * 2.5;
+          pos[i3] = Math.cos(angle)*rad; pos[i3+1] = Math.sin(angle*2)*0.3; pos[i3+2] = Math.sin(angle)*rad; break;
         }
         case 'storm': {
-          const angle = Math.random() * Math.PI * 2;
-          const r = 1.2 + Math.random() * 4;
-          pos[i * 3] = Math.cos(angle) * r; pos[i * 3 + 1] = (Math.random() - 0.5) * r * 0.8; pos[i * 3 + 2] = Math.sin(angle) * r;
-          break;
+          const angle = Math.random() * Math.PI * 2, rad = 1.2 + r * 4;
+          pos[i3] = Math.cos(angle)*rad; pos[i3+1] = (Math.random()-0.5)*rad*0.8; pos[i3+2] = Math.sin(angle)*rad; break;
         }
         case 'bands': {
-          const angle = Math.random() * Math.PI * 2;
-          const band = Math.floor(Math.random() * 8);
-          const r = 1.3 + band * 0.3;
-          pos[i * 3] = Math.cos(angle) * r; pos[i * 3 + 1] = (band - 4) * 0.25; pos[i * 3 + 2] = Math.sin(angle) * r * 0.9;
-          break;
+          const angle = Math.random() * Math.PI * 2, band = Math.floor(Math.random()*8), rad = 1.3 + band*0.3;
+          pos[i3] = Math.cos(angle)*rad; pos[i3+1] = (band-4)*0.25; pos[i3+2] = Math.sin(angle)*rad*0.9; break;
         }
         case 'ringDisk': {
-          const angle = Math.random() * Math.PI * 2;
-          const r = 1.5 + Math.random() * 3;
-          pos[i * 3] = Math.cos(angle) * r; pos[i * 3 + 1] = (Math.random() - 0.5) * 0.08; pos[i * 3 + 2] = Math.sin(angle) * r;
-          break;
+          const angle = Math.random() * Math.PI * 2, rad = 1.5 + r * 3;
+          pos[i3] = Math.cos(angle)*rad; pos[i3+1] = (Math.random()-0.5)*0.06; pos[i3+2] = Math.sin(angle)*rad; break;
         }
         case 'tilted': {
-          const angle = Math.random() * Math.PI * 2;
-          const r = 1.4 + Math.random() * 2;
-          pos[i * 3] = Math.cos(angle) * r; pos[i * 3 + 1] = Math.sin(angle) * r; pos[i * 3 + 2] = (Math.random() - 0.5) * 0.5;
-          break;
+          const angle = Math.random() * Math.PI * 2, rad = 1.4 + r * 2;
+          pos[i3] = Math.cos(angle)*rad; pos[i3+1] = Math.sin(angle)*rad; pos[i3+2] = (Math.random()-0.5)*0.5; break;
         }
         case 'jets': {
-          const angle = Math.random() * Math.PI * 2;
-          const r = 1.3 + Math.random() * 2;
-          pos[i * 3] = Math.cos(angle) * r * 0.6; pos[i * 3 + 1] = (Math.random() - 0.5) * 5; pos[i * 3 + 2] = Math.sin(angle) * r * 0.6;
-          break;
+          const angle = Math.random() * Math.PI * 2, rad = 1.3 + r * 2;
+          pos[i3] = Math.cos(angle)*rad*0.5; pos[i3+1] = (Math.random()-0.5)*5; pos[i3+2] = Math.sin(angle)*rad*0.5; break;
         }
-        case 'constellation': {
-          pos[i * 3] = (Math.random() - 0.5) * 5; pos[i * 3 + 1] = (Math.random() - 0.5) * 5; pos[i * 3 + 2] = (Math.random() - 0.5) * 5;
-          break;
-        }
-        default: {
-          const theta = Math.random() * Math.PI * 2; const phi = Math.acos(2 * Math.random() - 1); const r = 1.5 + Math.random() * 3;
-          pos[i * 3] = r * Math.sin(phi) * Math.cos(theta); pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta); pos[i * 3 + 2] = r * Math.cos(phi);
-        }
+        default:
+          pos[i3] = (Math.random()-0.5)*5; pos[i3+1] = (Math.random()-0.5)*5; pos[i3+2] = (Math.random()-0.5)*5;
       }
+      col[i3] = Math.max(0, Math.min(1, c.r + (Math.random()-0.5)*0.15));
+      col[i3+1] = Math.max(0, Math.min(1, c.g + (Math.random()-0.5)*0.15));
+      col[i3+2] = Math.max(0, Math.min(1, c.b + (Math.random()-0.5)*0.15));
     }
-    return { positions: pos, velocities: vel };
-  }, [mode, count]);
-
-  const colors = useMemo(() => {
-    const c = new THREE.Color(color);
-    const col = new Float32Array(count * 3);
-    for (let i = 0; i < count * 3; i++) col[i] = Math.max(0, Math.min(1, c.r + (Math.random() - 0.5) * 0.15));
-    return col;
-  }, [color, count]);
+    return { positions: pos, velocities: vel, colors: col };
+  }, [mode, color, count]);
 
   useFrame((state, delta) => {
     if (!ref.current) return;
     const p = ref.current.geometry.attributes.position.array as Float32Array;
     const v = velocities;
     const t = state.clock.elapsedTime;
-    const cz = cameraZ; // Camera Z relative to planet center
-
-    // SCATTER: when camera is near z=0, particles explode outward
-    const scatterIntensity = Math.max(0, 1 - Math.abs(cz) / 0.6);
-    const scatterForce = scatterIntensity * 8;
+    const scatterIntensity = Math.max(0, 1 - Math.abs(cameraZ) / 0.5);
+    const scatterForce = scatterIntensity * 15;
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-
-      // Apply scatter push
-      if (scatterForce > 0.1) {
-        const dx = p[i3], dy = p[i3 + 1], dz = p[i3 + 2];
-        const dist = Math.max(0.1, Math.sqrt(dx * dx + dy * dy + dz * dz));
-        v[i3] += (dx / dist) * scatterForce * delta;
-        v[i3 + 1] += (dy / dist) * scatterForce * delta;
-        v[i3 + 2] += (dz / dist) * scatterForce * delta;
+      if (scatterForce > 0.3) {
+        const dx = p[i3], dy = p[i3+1], dz = p[i3+2];
+        const dist = Math.max(0.01, Math.sqrt(dx*dx + dy*dy + dz*dz));
+        v[i3] += (dx/dist) * scatterForce * delta; v[i3+1] += (dy/dist) * scatterForce * delta; v[i3+2] += (dz/dist) * scatterForce * delta;
       }
-
-      // Base behavior per mode
       switch (mode) {
-        case 'outward':
-          p[i3] += v[i3]; p[i3 + 1] += v[i3 + 1]; p[i3 + 2] += v[i3 + 2];
-          if (Math.sqrt(p[i3] * p[i3] + p[i3 + 1] * p[i3 + 1] + p[i3 + 2] * p[i3 + 2]) > 4.5) {
-            const angle = Math.random() * Math.PI * 2, phi2 = Math.acos(2 * Math.random() - 1), r = 1.5;
-            p[i3] = r * Math.sin(phi2) * Math.cos(angle); p[i3 + 1] = r * Math.sin(phi2) * Math.sin(angle); p[i3 + 2] = r * Math.cos(phi2);
-            v[i3] = p[i3] * 0.002; v[i3 + 1] = p[i3 + 1] * 0.002; v[i3 + 2] = p[i3 + 2] * 0.002;
+        case 'fire':
+          p[i3] += v[i3]; p[i3+1] += v[i3+1]; p[i3+2] += v[i3+2];
+          if (p[i3]*p[i3]+p[i3+1]*p[i3+1]+p[i3+2]*p[i3+2] > 25) {
+            const a = Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1), r=1.5;
+            p[i3]=r*Math.sin(ph)*Math.cos(a); p[i3+1]=r*Math.sin(ph)*Math.sin(a); p[i3+2]=r*Math.cos(ph);
+            v[i3]=p[i3]*0.003; v[i3+1]=p[i3+1]*0.003; v[i3+2]=p[i3+2]*0.003;
           }
-          break;
+          p[i3] += Math.sin(t*2+i)*0.002; p[i3+1] += Math.cos(t*1.5+i)*0.002; break;
         case 'fastOrbit': {
-          const angle = Math.atan2(p[i3 + 2], p[i3]) + delta * 1.5;
-          const r = Math.sqrt(p[i3] * p[i3] + p[i3 + 2] * p[i3 + 2]);
-          p[i3] = Math.cos(angle) * r; p[i3 + 2] = Math.sin(angle) * r;
-          break;
-        }
+          const a = Math.atan2(p[i3+2], p[i3]) + delta*(1.8+Math.sin(i*0.5)*0.3);
+          const r = Math.sqrt(p[i3]*p[i3]+p[i3+2]*p[i3+2]); p[i3]=Math.cos(a)*r; p[i3+2]=Math.sin(a)*r; break; }
         case 'cloud': {
-          const angle = Math.atan2(p[i3 + 2], p[i3]) + delta * 0.12;
-          const r = Math.sqrt(p[i3] * p[i3] + p[i3 + 2] * p[i3 + 2]);
-          p[i3] = Math.cos(angle) * r; p[i3 + 2] = Math.sin(angle) * r;
-          p[i3 + 1] += Math.sin(t * 0.3 + i * 0.1) * 0.001;
-          break;
-        }
-        case 'life':
-          p[i3 + 1] = Math.sin(t * 0.5 + i * 0.05) * (0.3 + Math.abs(p[i3]) * 0.1);
-          break;
+          const a = Math.atan2(p[i3+2], p[i3]) + delta*0.15;
+          const r = Math.sqrt(p[i3]*p[i3]+p[i3+2]*p[i3+2]); p[i3]=Math.cos(a)*r; p[i3+2]=Math.sin(a)*r;
+          p[i3+1] += Math.sin(t*0.4+i*0.1)*0.001; break; }
+        case 'life': p[i3+1] = Math.sin(t*0.6+i*0.05)*(0.25+Math.abs(p[i3])*0.1); break;
         case 'storm': {
-          const angle = Math.atan2(p[i3 + 2], p[i3]) + delta * (0.2 + Math.sin(i * 0.1 + t) * 0.3);
-          const r = Math.sqrt(p[i3] * p[i3] + p[i3 + 2] * p[i3 + 2]);
-          p[i3] = Math.cos(angle) * r; p[i3 + 2] = Math.sin(angle) * r;
-          p[i3 + 1] += Math.sin(t * 2 + i * 0.3) * 0.002;
-          break;
-        }
+          const a = Math.atan2(p[i3+2], p[i3]) + delta*(0.25+Math.sin(i*0.1+t)*0.4);
+          const r = Math.sqrt(p[i3]*p[i3]+p[i3+2]*p[i3+2]); p[i3]=Math.cos(a)*r; p[i3+2]=Math.sin(a)*r;
+          p[i3+1] += Math.sin(t*2.5+i*0.3)*0.003; break; }
         case 'bands': {
-          const angle = Math.atan2(p[i3 + 2], p[i3]) + delta * 0.15 * (Math.sin(p[i3 + 1] * 3) * 0.5 + 1);
-          const r = Math.sqrt(p[i3] * p[i3] + p[i3 + 2] * p[i3 + 2]);
-          p[i3] = Math.cos(angle) * r; p[i3 + 2] = Math.sin(angle) * r;
-          break;
-        }
+          const a = Math.atan2(p[i3+2], p[i3]) + delta*0.18*(Math.sin(p[i3+1]*3)*0.5+1);
+          const r = Math.sqrt(p[i3]*p[i3]+p[i3+2]*p[i3+2]); p[i3]=Math.cos(a)*r; p[i3+2]=Math.sin(a)*r; break; }
         case 'ringDisk': {
-          const angle = Math.atan2(p[i3 + 2], p[i3]) + delta * (0.3 / (Math.sqrt(p[i3] * p[i3] + p[i3 + 2] * p[i3 + 2]) + 0.5));
-          const r = Math.sqrt(p[i3] * p[i3] + p[i3 + 2] * p[i3 + 2]);
-          p[i3] = Math.cos(angle) * r; p[i3 + 2] = Math.sin(angle) * r;
-          break;
-        }
+          const a = Math.atan2(p[i3+2], p[i3]) + delta*(0.35/(Math.sqrt(p[i3]*p[i3]+p[i3+2]*p[i3+2])+0.5));
+          const r = Math.sqrt(p[i3]*p[i3]+p[i3+2]*p[i3+2]); p[i3]=Math.cos(a)*r; p[i3+2]=Math.sin(a)*r; break; }
         case 'tilted': {
-          const angle = Math.atan2(p[i3 + 1], p[i3]) + delta * 0.2;
-          const r = Math.sqrt(p[i3] * p[i3] + p[i3 + 1] * p[i3 + 1]);
-          p[i3] = Math.cos(angle) * r; p[i3 + 1] = Math.sin(angle) * r;
-          break;
-        }
-        case 'jets':
-          p[i3 + 1] += Math.sin(t * 0.3 + i) * 0.02;
-          p[i3 + 1] = ((p[i3 + 1] + 2.5) % 5) - 2.5;
-          break;
-        case 'constellation':
-          p[i3] += Math.sin(t * 0.15 + i * 0.08) * 0.003;
-          p[i3 + 1] += Math.cos(t * 0.12 + i * 0.06) * 0.003;
-          break;
-        default:
-          p[i3] += Math.sin(t * 0.1 + i * 0.1) * 0.002;
+          const a = Math.atan2(p[i3+1], p[i3]) + delta*0.25;
+          const r = Math.sqrt(p[i3]*p[i3]+p[i3+1]*p[i3+1]); p[i3]=Math.cos(a)*r; p[i3+1]=Math.sin(a)*r; break; }
+        case 'jets': p[i3+1] += Math.sin(t*0.4+i)*0.025; p[i3+1] = ((p[i3+1]+2.5)%5)-2.5; break;
+        case 'constellation': p[i3]+=Math.sin(t*0.15+i*0.08)*0.003; p[i3+1]+=Math.cos(t*0.12+i*0.06)*0.003; break;
+        default: p[i3]+=Math.sin(t*0.1+i*0.1)*0.002;
       }
-
-      // Damping after scatter
-      if (scatterIntensity > 0.1) {
-        v[i3] *= 0.96; v[i3 + 1] *= 0.96; v[i3 + 2] *= 0.96;
-      }
+      if (scatterIntensity > 0.1) { v[i3]*=0.92; v[i3+1]*=0.92; v[i3+2]*=0.92; }
     }
-
     ref.current.geometry.attributes.position.needsUpdate = true;
   });
 
   return (
     <points ref={ref} geometry={new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(positions, 3)).setAttribute('color', new THREE.BufferAttribute(colors, 3))}>
-      <pointsMaterial size={size * 1.5} vertexColors transparent opacity={0.85} sizeAttenuation blending={THREE.AdditiveBlending} depthWrite={false} />
+      <pointsMaterial size={size * 1.8} vertexColors={true} transparent={true} opacity={0.85} sizeAttenuation={true} blending={THREE.AdditiveBlending} depthWrite={false} />
     </points>
   );
 }
 
-// ════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // 🎥 FLYTHROUGH CAMERA
-// Camera z goes from +5 → -5 each chapter
-// At z=0: camera is inside the planet → planet transparent, particles scatter
-// ════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function FlythroughCamera({ chapterProgress }: { chapterProgress: number }) {
   const { camera } = useThree();
   const state = useRef({ z: 5, fov: 50 });
-
   useFrame(() => {
     const c = camera as THREE.PerspectiveCamera;
-    // chapterProgress: 0→1 maps z from +5 (far) → -5 (emerging on other side)
     const targetZ = 5 - chapterProgress * 10;
     state.current.z += (targetZ - state.current.z) * 0.06;
-
-    // FOV: wider when passing through (more dramatic)
-    const proximity = 1 - Math.abs(chapterProgress - 0.5) * 2; // 1 at center, 0 at edges
+    const proximity = 1 - Math.abs(chapterProgress - 0.5) * 2;
     const targetFov = 40 + proximity * 25;
     state.current.fov += (targetFov - state.current.fov) * 0.05;
-
     c.position.z = state.current.z;
     c.position.x += (mouseVec.x * 0.2 * proximity - c.position.x) * 0.03;
     c.position.y += (-mouseVec.y * 0.15 * proximity - c.position.y) * 0.03;
@@ -313,34 +265,29 @@ function FlythroughCamera({ chapterProgress }: { chapterProgress: number }) {
     c.updateMatrix();
     c.updateProjectionMatrix();
   });
-
   return null;
 }
 
-// ════════════════════════════════════════
-// SCENE COMPOSITION
-// ════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// SCENE
+// ═══════════════════════════════════════════════════════
 function Scene({ chapter, cameraZ, chapterProgress }: { chapter: typeof chapters[0], cameraZ: number, chapterProgress: number }) {
   return (
     <>
       <FlythroughCamera chapterProgress={chapterProgress} />
-      <ambientLight intensity={chapter.glowIntensity * 0.1} />
-      <pointLight position={[0, 0, 0]} intensity={chapter.glowIntensity * (0.5 + Math.abs(cameraZ) * 0.15)}
-        color={chapter.planetColor} distance={10} />
-      <pointLight position={[state.current.z > 0 ? 4 : -4, 4, 4]} intensity={0.4} color={chapter.particleColor} distance={12} />
+      <ambientLight intensity={chapter.glowIntensity * 0.08} />
+      <pointLight position={[0, 0, 0]} intensity={chapter.glowIntensity * (0.4 + Math.abs(cameraZ) * 0.12)} color={chapter.planetColor} distance={10} />
+      <pointLight position={[cameraZ > 0 ? 5 : -5, 4, 4]} intensity={0.5} color={chapter.particleColor} distance={12} />
       <StarField />
-      <Planet color={chapter.planetColor} glow={chapter.glowIntensity} hasRing={chapter.hasRing} cameraZ={cameraZ} />
-      <PlanetParticles mode={chapter.particleMode} color={chapter.particleColor}
-        count={chapter.particleCount} size={chapter.particleSize} cameraZ={cameraZ} />
+      <Planet color={chapter.planetColor} glow={chapter.glowIntensity} cameraZ={cameraZ} hasRing={chapter.hasRing} />
+      <PlanetParticles mode={chapter.particleMode} color={chapter.particleColor} count={chapter.particleCount} size={chapter.particleSize} cameraZ={cameraZ} />
     </>
   );
 }
 
-const camState = { z: 5 }; // shared for lighting
-
-// ════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // MAIN PAGE
-// ════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 export default function HomePage() {
   const [activeChapter, setActiveChapter] = useState(0);
   const [chapterProgress, setChapterProgress] = useState(0);
@@ -348,7 +295,7 @@ export default function HomePage() {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    const tick = setInterval(() => setTime(new Date()), 1000);
+    const tickT = setInterval(() => setTime(new Date()), 1000);
     let raf: number;
     const update = () => {
       const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
@@ -357,12 +304,11 @@ export default function HomePage() {
       const progress = (totalProgress * chapters.length) - ch;
       setActiveChapter(ch);
       setChapterProgress(progress);
-      // Map chapter progress 0→1 to camera z: +5 → -5
       setCameraZ(5 - progress * 10);
       raf = requestAnimationFrame(update);
     };
     raf = requestAnimationFrame(update);
-    return () => { clearInterval(tick); cancelAnimationFrame(raf); };
+    return () => { clearInterval(tickT); cancelAnimationFrame(raf); };
   }, []);
 
   const scrollTo = (i: number) => {
@@ -376,81 +322,53 @@ export default function HomePage() {
   }, []);
 
   const chapter = chapters[activeChapter];
-  // Content visibility: peak in middle of flythrough
   const contentOpacity = Math.min(1, chapterProgress < 0.15 ? chapterProgress / 0.15 : chapterProgress > 0.85 ? (1 - chapterProgress) / 0.15 : 1);
 
   return (
     <>
-      {/* ─── 3D CANVAS ─── */}
-      <div
-        style={{ position: 'fixed', inset: 0, zIndex: 1, background: chapter.bgDark, transition: 'background 0.5s ease' }}
-        onPointerMove={handlePointerMove}
-      >
-        <Canvas
-          key={activeChapter}
-          camera={{ position: [0, 0, 5], fov: 40, near: 0.1, far: 100 }}
-          dpr={[1, 1.5]}
-          gl={{ antialias: true, alpha: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.15 }}
-        >
+      <div style={{ position: 'fixed', inset: 0, zIndex: 1, background: chapter.bgDark, transition: 'background 0.6s ease' }} onPointerMove={handlePointerMove}>
+        <Canvas key={activeChapter} camera={{ position: [0, 0, 5], fov: 40, near: 0.1, far: 100 }} dpr={[1, 1.5]} gl={{ antialias: true, alpha: false, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.2 }}>
           <Scene chapter={chapter} cameraZ={cameraZ} chapterProgress={chapterProgress} />
         </Canvas>
-        {/* Vignette */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: `radial-gradient(ellipse at 50% 50%, transparent ${40 + (1 - contentOpacity) * 20}%, rgba(0,0,0,${0.3 + (1 - contentOpacity) * 0.3}) 100%)` }} />
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: `radial-gradient(ellipse at 50% 50%, transparent ${35 + (1 - contentOpacity) * 25}%, rgba(0,0,0,${0.25 + (1 - contentOpacity) * 0.35}) 100%)` }} />
       </div>
 
-      {/* ─── TOP BAR ─── */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-        background: 'rgba(5,5,10,0.15)', backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(255,255,255,0.02)', height: 38,
-        display: 'flex', alignItems: 'center', padding: '0 12px', justifyContent: 'space-between' }}>
+      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, background: 'rgba(5,5,10,0.12)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.02)', height: 36, display: 'flex', alignItems: 'center', padding: '0 12px', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 18, height: 18, borderRadius: 4, background: `${chapter.planetColor}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: chapter.planetColor, fontWeight: 900, fontSize: 8, transition: 'all 0.4s' }}>K</div>
-          <span style={{ fontWeight: 800, fontSize: 11 }}><span style={{ color: chapter.planetColor, transition: 'color 0.4s' }}>{chapter.name}</span><span style={{ color: 'rgba(255,255,255,0.2)', fontWeight: 400, fontSize: 8, marginLeft: 4 }}>KDS</span></span>
+          <div style={{ width: 16, height: 16, borderRadius: 4, background: `${chapter.planetColor}08`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: chapter.planetColor, fontWeight: 900, fontSize: 7, transition: 'all 0.4s' }}>K</div>
+          <span style={{ fontWeight: 800, fontSize: 10 }}><span style={{ color: chapter.planetColor, transition: 'color 0.4s' }}>{chapter.name}</span><span style={{ color: 'rgba(255,255,255,0.15)', fontWeight: 400, fontSize: 7, marginLeft: 4 }}>KDS</span></span>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
-          {['Community', 'Dashboard'].map(n => (
-            <a key={n} href={n === 'Community' ? '/community' : '/dashboard'} style={{ padding: '2px 6px', borderRadius: 3, fontSize: 8, fontWeight: 500, color: 'rgba(255,255,255,0.3)', textDecoration: 'none' }}>{n}</a>
+          {[{ l: 'Community', h: '/community' }, { l: 'Dashboard', h: '/dashboard' }].map(n => (
+            <a key={n.l} href={n.h} style={{ padding: '2px 6px', borderRadius: 3, fontSize: 7, fontWeight: 500, color: 'rgba(255,255,255,0.25)', textDecoration: 'none' }}>{n.l}</a>
           ))}
         </div>
       </header>
 
-      {/* ─── NAV DOTS ─── */}
-      <nav style={{ position: 'fixed', right: 12, top: '50%', transform: 'translateY(-50%)', zIndex: 50, display: 'flex', flexDirection: 'column', gap: 9 }}>
+      <nav style={{ position: 'fixed', right: 10, top: '50%', transform: 'translateY(-50%)', zIndex: 50, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {chapters.map((p, i) => (
-          <button key={i} onClick={() => scrollTo(i)} style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0' }}>
-            <span style={{ position: 'relative', width: activeChapter === i ? 6 : 4, height: activeChapter === i ? 6 : 4, borderRadius: '50%',
-              background: activeChapter === i ? p.planetColor : 'rgba(255,255,255,0.06)', transition: 'all 0.3s',
-              boxShadow: activeChapter === i ? `0 0 6px ${p.planetColor}30` : 'none' }}>
-              {activeChapter === i && <span style={{ position: 'absolute', inset: -3, borderRadius: '50%', border: `1px solid ${p.planetColor}15` }} />}
+          <button key={i} onClick={() => scrollTo(i)} style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: '1px 0' }}>
+            <span style={{ position: 'relative', width: activeChapter === i ? 5 : 4, height: activeChapter === i ? 5 : 4, borderRadius: '50%', background: activeChapter === i ? p.planetColor : 'rgba(255,255,255,0.05)', transition: 'all 0.3s', boxShadow: activeChapter === i ? `0 0 6px ${p.planetColor}20` : 'none' }}>
+              {activeChapter === i && <span style={{ position: 'absolute', inset: -3, borderRadius: '50%', border: `1px solid ${p.planetColor}10` }} />}
             </span>
           </button>
         ))}
       </nav>
 
-      {/* ─── FLOATING CONTENT OVERLAY ─── */}
       <div style={{ position: 'fixed', inset: 0, zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-        <div style={{ textAlign: 'center', padding: 40, maxWidth: 500,
-          opacity: contentOpacity, transform: `translateY(${(1 - contentOpacity) * 20}px)`,
-          transition: 'opacity 0.3s ease, transform 0.3s ease', pointerEvents: contentOpacity > 0.3 ? 'auto' : 'none' }}>
+        <div style={{ textAlign: 'center', padding: 40, maxWidth: 480, opacity: contentOpacity, transform: `translateY(${(1 - contentOpacity) * 20}px)`, transition: 'opacity 0.3s ease, transform 0.3s ease', pointerEvents: contentOpacity > 0.3 ? 'auto' : 'none' }}>
           {contentOpacity > 0.5 && (
             <>
-              <span style={{ color: `${chapter.planetColor}25`, fontSize: 8, fontWeight: 700, letterSpacing: '0.3em', textTransform: 'uppercase' }}>{chapter.subtitle}</span>
-              <h2 style={{ color: activeChapter === 0 || activeChapter === 9 ? 'transparent' : 'rgba(255,255,255,0.85)',
-                fontSize: activeChapter === 0 ? 'clamp(2.5rem, 8vw, 5rem)' : 'clamp(1.5rem, 4vw, 2.8rem)',
-                fontWeight: 900, marginTop: activeChapter === 0 ? 4 : 4, marginBottom: activeChapter === 0 ? 10 : 6, lineHeight: 0.85,
-                ...(activeChapter === 0 || activeChapter === 9 ? {
-                  background: `linear-gradient(180deg, ${chapter.planetColor} 0%, ${chapter.particleColor} 100%)`,
-                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                  filter: `drop-shadow(0 0 30px ${chapter.planetColor}40)`,
-                } : {}) }}>
+              <span style={{ color: `${chapter.planetColor}20`, fontSize: 7, fontWeight: 700, letterSpacing: '0.35em', textTransform: 'uppercase' }}>{chapter.subtitle}</span>
+              <h2 style={{ color: activeChapter === 0 || activeChapter === 9 ? 'transparent' : 'rgba(255,255,255,0.8)', fontSize: activeChapter === 0 ? 'clamp(2.5rem, 8vw, 5rem)' : 'clamp(1.5rem, 4vw, 2.8rem)', fontWeight: 900, marginTop: activeChapter === 0 ? 4 : 4, marginBottom: activeChapter === 0 ? 8 : 6, lineHeight: 0.85,
+                ...(activeChapter === 0 || activeChapter === 9 ? { background: `linear-gradient(180deg, ${chapter.planetColor} 0%, ${chapter.particleColor} 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: `drop-shadow(0 0 30px ${chapter.planetColor}30)` } : {}) }}>
                 {chapter.name}
               </h2>
-              {activeChapter !== 0 && <div style={{ width: 40, height: 1, background: `linear-gradient(90deg, transparent, ${chapter.planetColor}50, transparent)`, margin: '0 auto 10px' }} />}
-              <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, lineHeight: 1.7, maxWidth: 380, margin: '0 auto 14px' }}>{chapter.content}</p>
+              {activeChapter !== 0 && <div style={{ width: 50, height: 1, background: `linear-gradient(90deg, transparent, ${chapter.planetColor}50, transparent)`, margin: '0 auto 10px' }} />}
+              <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, lineHeight: 1.7, maxWidth: 380, margin: '0 auto 12px' }}>{chapter.content}</p>
               {chapter.stats && (
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 30, marginBottom: 14 }}>
-                  {chapter.stats.map((s: any, si: number) => (
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 30, marginBottom: 12 }}>
+                  {chapter.stats.map((s: { n: string, l: string }, si: number) => (
                     <div key={si} style={{ textAlign: 'center' }}>
                       <div style={{ color: chapter.planetColor, fontSize: 18, fontWeight: 800 }}>{s.n}</div>
                       <div style={{ color: 'rgba(255,255,255,0.12)', fontSize: 6, letterSpacing: '0.15em', marginTop: 2, textTransform: 'uppercase' }}>{s.l}</div>
@@ -458,24 +376,16 @@ export default function HomePage() {
                   ))}
                 </div>
               )}
-              {chapter.link && (
-                <a href={chapter.link} style={{ display: 'inline-block', padding: '8px 22px', background: `${chapter.planetColor}08`, border: `1px solid ${chapter.planetColor}18`, color: chapter.planetColor, borderRadius: 5, fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textDecoration: 'none' }}>
-                  {activeChapter === 9 ? 'JOIN KDS →' : 'Explore →'}
-                </a>
-              )}
-              {/* Scroll indicator */}
-              {activeChapter < 9 && (
-                <div style={{ marginTop: 12, animation: 'mc-b 2s ease-in-out infinite', color: 'rgba(255,255,255,0.08)', fontSize: 10 }}>
-                  ↓ Keep scrolling to fly through
-                </div>
-              )}
+              {chapter.link && <a href={chapter.link} style={{ display: 'inline-block', padding: '8px 20px', background: `${chapter.planetColor}06`, border: `1px solid ${chapter.planetColor}15`, color: chapter.planetColor, borderRadius: 5, fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textDecoration: 'none' }}>
+                {activeChapter === 9 ? 'JOIN KDS →' : 'Explore →'}</a>}
+              {activeChapter < 9 && !chapter.link && <div style={{ marginTop: 10, animation: 'mcB 2s ease-in-out infinite', color: 'rgba(255,255,255,0.06)', fontSize: 9 }}>↓ Keep scrolling to fly through</div>}
             </>
           )}
         </div>
       </div>
 
       <AmbientSound />
-      <style>{`@keyframes mc-b{0%,100%{transform:translateY(0);opacity:.08}50%{transform:translateY(6px);opacity:.15}}`}</style>
+      <style>{`@keyframes mcB{0%,100%{transform:translateY(0);opacity:.06}50%{transform:translateY(6px);opacity:.12}}`}</style>
     </>
   );
 }
